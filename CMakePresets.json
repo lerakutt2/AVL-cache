@@ -1,0 +1,28 @@
+﻿{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "wsl-debug",
+      "displayName": "WSL Debug",
+      "description": "Сборка в WSL с quadmath",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "/usr/bin/gcc",
+        "CMAKE_CXX_COMPILER": "/usr/bin/g++",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_CXX_FLAGS": "-fext-numeric-literals -I/usr/lib/gcc/x86_64-linux-gnu/11/include",
+        "CMAKE_EXE_LINKER_FLAGS": "-lquadmath",
+        "CMAKE_LIBRARY_PATH": "/usr/lib/gcc/x86_64-linux-gnu/11"
+      },
+      "environment": {
+        "PATH": "/usr/local/bin:/usr/bin:/bin:/usr/lib/gcc/x86_64-linux-gnu/11"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": "WSL"
+        }
+      }
+    }
+  ]
+}

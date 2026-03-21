@@ -1,0 +1,41 @@
+# Ищем quadmath.h
+find_path(QUADMATH_INCLUDE_DIR
+    NAMES quadmath.h
+    PATHS
+        /usr/include
+        /usr/local/include
+        /usr/lib/gcc/x86_64-linux-gnu/*/include
+        /usr/lib/gcc/*/*/include
+    PATH_SUFFIXES include
+    NO_DEFAULT_PATH  # Не ищем в системных путях по умолчанию
+)
+
+# Ищем библиотеку quadmath с явным указанием путей
+find_library(QUADMATH_LIBRARY
+    NAMES quadmath
+    PATHS
+        /usr/lib
+        /usr/lib/x86_64-linux-gnu
+        /usr/local/lib
+        /usr/lib/gcc/x86_64-linux-gnu/11
+        /usr/lib/gcc/x86_64-linux-gnu/*  # любая версия
+    PATH_SUFFIXES lib lib64
+    NO_DEFAULT_PATH
+)
+
+# Проверяем, что нашли заголовки
+#if(NOT QUADMATH_INCLUDE_DIR)
+#    message(FATAL_ERROR "quadmath.h not found! Please install libquadmath-dev")
+#else()
+#    message(STATUS "Found quadmath.h: ${QUADMATH_INCLUDE_DIR}")
+#endif()
+
+# Проверяем, что нашли библиотеку
+#if(NOT QUADMATH_LIBRARY)
+#    message(FATAL_ERROR "libquadmath not found in:\n"
+#            "  /usr/lib/x86_64-linux-gnu\n"
+#            "  /usr/lib/gcc/x86_64-linux-gnu/11\n"
+#            "Please install: sudo apt install libquadmath0")
+#else()
+#    message(STATUS "Found libquadmath: ${QUADMATH_LIBRARY}")
+#endif()
