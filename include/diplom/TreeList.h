@@ -1,52 +1,47 @@
-#pragma once
-#include <list>
-
-// Структура узла дерева
-template<typename T>
-struct Leaf {
-    Leaf* left = nullptr;
-    Leaf* right = nullptr;
-    Leaf* next = nullptr;
-    int height = 1;
-    T argument{};
-    void* value = nullptr;
-
-    Leaf() = default;
-    explicit Leaf(const T& arg) : argument(arg) {}
-};
+#ifndef TreeList_H
+#define TreeList_H_
+#include <vector>
+#include "Functions.h"
+#include "Leaf.h"
+#include "Tree.h"
 
 // Будем использовать вариативные шаблоны. Запись  typename... InputTypes значит, что шаблон может принять 0 или более типов в качестве своих аргументов.
 /// <summary>
-/// Класс, содержащий дерево для конкретной функции (пока GG)
+/// Класс, содержащий дерево для конкретной функции
 /// </summary>
-/// <typeparam name="...InputTypes">Типы входных параметров (по порядку)</typeparam>
 /// <typeparam name="ReturnType">Тип выходного параметра</typeparam>
+/// <typeparam name="...InputTypes">Типы входных параметров (по порядку)</typeparam>
 template<typename ReturnType, typename... InputTypes>
 class TreeList {
 public:
-    explicit TreeList(std::function<ReturnType(InputTypes...)> func);
-    TreeList();
+    TreeList(ReturnType(*func)(InputTypes...));
+
     ~TreeList();
 
-    void GetValue(InputType* data, ReturnType& retData);
+    TreeList(TreeList&& other) noexcept;
+    TreeList& operator=(TreeList&& other) noexcept;
+
+    ReturnType GetValue(InputTypes... data);
 
 private:
-    std::list<Tree> ListOfTrees;
-    std::function<ReturnType(InputTypes...)> func;
+    std::function<ReturnType(InputTypes...)> func_;   
+    //Leaf<InputType> head;
+    using tupleOfTypes = std::tuple<InputTypes...>;
+    int paramsCount = sizeof...(InputTypes);
+    std::tuple<Tree<InputTypes>...> trees;
+    void CreateTrees();
+    //void* GetValue(int treeLevel, Leaf<InputType>* head, InputType* data);
 
-    Leaf<int> head; // вместо int - std::tuple<InputTypes...>[0] - тип первого аргумента
-    void* GetValue(int actLevel, Leaf<InputType>* head,
-        InputType* data, Leaf<InputType>** lastLevelHead);
+    //void CleanTree(Leaf<InputType>* leaf);
 
-    void CleanTree(Leaf<InputType>* leaf);
-    // класс дерева и класс содержащий все деревья? да!!!!!!!
-    Leaf<InputType>* NewNode(InputType* data, const int& actLevel,
-        Leaf<InputType>*& value,
-        Leaf<InputType>** lastLevelHead);
+    //Leaf<InputType>* NewNode(InputType* data, const int& treeLevel, Leaf<InputType>*& value);
 
-    Leaf<InputType>* InsertNode(Leaf<InputType>* node, InputType* data,
-        const int& actLevel, Leaf<InputType>*& value,
-        Leaf<InputType>** lastLevelHead);
+    //Leaf<InputType>* InsertNode(Leaf<InputType>* node, InputType* data,
+     //   const int& treeLevel, Leaf<InputType>*& value);
+
+    /*Leaf<InputType>* Find(Leaf<InputType>* currNode, InputType searchVal);
+
+    Leaf<InputType>* Balance(Leaf<InputType>* node, InputType argument);
 
     int Height(Leaf<InputType>* node);
 
@@ -54,8 +49,14 @@ private:
 
     Leaf<InputType>* LeftRotate(Leaf<InputType>* x);
 
-    int GetBalance(Leaf<InputType>* N);
+    int GetBalance(Leaf<InputType>* N);*/
 };
+
+// deduction guide
+template<typename ReturnType, typename... InputTypes>
+TreeList(ReturnType(*)(InputTypes...)) -> TreeList<ReturnType, InputTypes...>;
 
 // Подключаем реализацию шаблонных методов
 #include "../../src/diplom/TreeList_impl.h"
+
+#endif // TreeList_H
