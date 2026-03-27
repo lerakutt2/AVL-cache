@@ -30,7 +30,7 @@ private:
     int paramsCount = sizeof...(InputTypes);
     std::tuple<Tree<InputTypes>...> trees;
     void CreateTrees();
-    //void* GetValue(int treeLevel, Leaf<InputType>* head, InputType* data);
+    void* GetValue(int TreeLevel, std::tuple<InputTypes...> data);
 
     //void CleanTree(Leaf<InputType>* leaf);
 

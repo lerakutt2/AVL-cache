@@ -16,8 +16,8 @@
 //}
 
 template<typename T>
-Leaf<T>* Tree<T>::CreateLeaf(T arg) {
-    return new Leaf<T>(arg);
+Leaf<T>* Tree<T>::CreateLeaf() {
+    return new Leaf<T>();
 }
 
 //
@@ -50,26 +50,26 @@ Leaf<T>* Tree<T>::CreateLeaf(T arg) {
 //    }
 //    throw std::runtime_error("Tree::GetValue: unexpected state");
 //}
-//
-//// Find <T> todo
-//template<T>
-//Leaf<T>* Tree<T>::Find(Leaf<T>* currNode, T searchVal)
-//{
-//    while (true) {               // cycle across all leaves on a given Tree
-//        if (currNode == nullptr) // I have not found given node, need to add
-//            return nullptr;
-//        if (searchVal == currNode->argument) {
-//            break;
-//        }
-//        else if (searchVal < currNode->argument)
-//            currNode = currNode->left;
-//        else
-//            currNode = currNode->right;
-//    }                // cycle across all leaves
-//
-//    return currNode;
-//
-//}
+
+// Find <T> todo
+template<typename T>
+Leaf<T>* Tree<T>::Find(Leaf<T>* currNode, T searchVal)
+{
+    while (true) {               // cycle across all leaves on a given Tree
+        if (currNode == nullptr) // I have not found given node, need to add
+            return nullptr;
+        if (searchVal == currNode->argument) {
+            break;
+        }
+        else if (searchVal < currNode->argument)
+            currNode = currNode->left;
+        else
+            currNode = currNode->right;
+    }                // cycle across all leaves
+
+    return currNode;
+
+}
 //
 //// CleanTree <T> todo
 //template<T>

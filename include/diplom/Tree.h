@@ -19,30 +19,30 @@ public:
     ~Tree() = default;
 
     //void GetValue(InputType* data, ReturnType& result);
-    Leaf<T>* CreateLeaf(T arg);
-private:
-  /*  Function func;
-    Leaf<InputType> head;
-    void* GetValue(int treeLevel, Leaf<InputType>* head, InputType* data);
+    //Leaf<T>* CreateLeaf(T arg);
 
-    void CleanTree(Leaf<InputType>* leaf);
+    Leaf<T>* CreateLeaf();
+    //Leaf<InputType> head;
+    //void* GetValue(int treeLevel, Leaf<InputType>* head, InputType* data);
 
-    Leaf<InputType>* NewNode(InputType* data, const int& treeLevel, Leaf<InputType>*& value);
+    //void CleanTree(Leaf<InputType>* leaf);
 
-    Leaf<InputType>* InsertNode(Leaf<InputType>* node, InputType* data,
-        const int& treeLevel, Leaf<InputType>*& value);
+    //Leaf<InputType>* NewNode(InputType* data, const int& treeLevel, Leaf<InputType>*& value);
 
-    Leaf<InputType>* Find(Leaf<InputType>* currNode, InputType searchVal);
+    //Leaf<InputType>* InsertNode(Leaf<InputType>* node, InputType* data,
+    //    const int& treeLevel, Leaf<InputType>*& value);
 
-    Leaf<InputType>* Balance(Leaf<InputType>* node, InputType argument);
+    Leaf<T>* Find(Leaf<T>* currNode, T searchVal);
 
-    int Height(Leaf<InputType>* node);
+    //Leaf<InputType>* Balance(Leaf<InputType>* node, InputType argument);
 
-    Leaf<InputType>* RightRotate(Leaf<InputType>* y);
+    //int Height(Leaf<InputType>* node);
 
-    Leaf<InputType>* LeftRotate(Leaf<InputType>* x);
+    //Leaf<InputType>* RightRotate(Leaf<InputType>* y);
 
-    int GetBalance(Leaf<InputType>* N);*/
+    //Leaf<InputType>* LeftRotate(Leaf<InputType>* x);
+
+    //int GetBalance(Leaf<InputType>* N);
 };
 
 // Подключаем реализацию шаблонных методов

@@ -27,41 +27,39 @@ void TreeList<ReturnType, InputTypes...>::CreateTrees() {
 // public GetValue
 template<typename ReturnType, typename... InputTypes>
 ReturnType TreeList<ReturnType, InputTypes...>::GetValue(InputTypes... data) {
-    //void* res = GetValue(5, &head, data);
+    void* res = GetValue(paramsCount, std::tuple<InputTypes...>(data...));
     //result = *static_cast<ReturnType*>(res);
+    
     return func_(data...);
 }
-//
-//// private GetValue
-//template<typename ReturnType, typename... InputTypes>
-//void* TreeList<ReturnType, InputTypes...>::GetValue(int TreeLevel, Leaf<InputType>* head,
-//    InputType* data) {
-//    Leaf<InputType>* currHead = head;
-//    Leaf<InputType>* currNode;
-//
-//    InputType functionParam;
-//    for (; TreeLevel >= 0; --TreeLevel) { // cycle traversing all parameters (all TreeLists)
-//        functionParam = data[TreeLevel];
-//        currNode = currHead->next;
-//
-//        currNode = Find(currNode, functionParam);
-//        if (currNode != nullptr) { // I have found requested node, either return result or go
-//            if (TreeLevel == 0) {
-//                std::cout << "Node found!" << std::endl;
-//                return currNode->value;
-//            }
-//            else // one level further
-//                currHead = currNode;
-//        }
-//        else { // I have not found requested node, add it and return result
-//            Leaf<InputType>* result;
-//            currHead->next = InsertNode(currHead->next, data, TreeLevel, result);
-//            return result->value;
-//        }
-//    }
-//    throw std::runtime_error("TreeList::GetValue: unexpected state");
-//}
-//
+
+// private GetValue
+template<typename ReturnType, typename... InputTypes>
+void* TreeList<ReturnType, InputTypes...>::GetValue(int TreeLevel, std::tuple<InputTypes...> data) {
+    //Leaf<InputType>* currHead = head;
+    //Leaf<std::get<0>(tupleOfTypes)>* currNode;
+   // for (; TreeLevel >= 0; --TreeLevel) { // cycle traversing all parameters (all TreeLists)
+       // currNode = currHead->next;
+    auto currNode = std::get<0>(trees).CreateLeaf();
+        currNode = std::get<0>(trees).Find(currNode, std::get<0>(data));
+        if (currNode != nullptr) { // I have found requested node, either return result or go
+            if (TreeLevel == 0) {
+                std::cout << "Node found!" << std::endl;
+               // return currNode->value;
+            }
+            //else // one level further
+               // currHead = currNode;
+        }
+        else { // I have not found requested node, add it and return result
+            //Leaf<InputType>* result;
+            //currHead->next = InsertNode(currHead->next, data, TreeLevel, result);
+            std::cout << "Null";
+            //return result->value;
+        }
+    //}
+    //throw std::runtime_error("TreeList::GetValue: unexpected state");
+}
+
 //// Find <T> todo
 //template<typename ReturnType, typename... InputTypes>
 //Leaf<InputType>* TreeList<ReturnType, InputTypes...>::Find(Leaf<InputType>* currNode, InputType searchVal)
