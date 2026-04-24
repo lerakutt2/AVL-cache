@@ -28,11 +28,11 @@ void TreeList<ReturnType, InputTypes...>::CreateTrees() {
 // public GetValue
 template<typename ReturnType, typename... InputTypes>
 ReturnType TreeList<ReturnType, InputTypes...>::GetValue(InputTypes... Inputdata) {
-    params = Inputdata...;
+    paramsTuple = std::make_tuple(Inputdata...);
     void* res = GetValue(paramsCount - 1);
-    //result = *static_cast<ReturnType*>(res);
+    ReturnType result = *static_cast<ReturnType*>(res);
     
-    return func_(data...);
+    return result;
 }
 
 // private GetValue
@@ -41,26 +41,53 @@ void* TreeList<ReturnType, InputTypes...>::GetValue(int TreeLevel) {
     auto currHead = &head;
     std::cout << TreeLevel << std::endl;
     //Leaf<std::get<0>(tupleOfTypes)>* currNode;
-    for (; TreeLevel >= 0; --TreeLevel) { // cycle traversing all parameters (all TreeLists)
-        auto currNode = currHead->next;
-        //    auto currNode = std::get<0>(trees).CreateLeaf();
-        currNode = std::get<1>(trees).Find(currNode, std::get<1>(data));
+    //вместо цмкла
+
+    //std::get<0>(trees).GetValue(currHead, paramsTuple);
+   
+    //for (; TreeLevel >= 0; --TreeLevel) { // cycle traversing all parameters (all TreeLists)
+    //    
+        //    auto currNode = std::get<0>(trees).CreateLeaf(); 
+        auto currNode = std::get<0>(trees).Find(currHead, std::get<0>(paramsTuple));
         if (currNode != nullptr) { // I have found requested node, either return result or go
             if (TreeLevel == 0) {
                 std::cout << "Node found!" << std::endl;
-                // return currNode->value;
+                return currNode->value;
             }
-           else // one level further
+            // one level further
                 currHead = currNode;
         }
         else { // I have not found requested node, add it and return result
-            Leaf<int>* result;
+            std::cout << "Not found" << std::endl;
+            Leaf<int>* result = nullptr;
             //currHead->next = InsertNode(currHead->next, data, TreeLevel, result);
-            currHead->next = std::any_cast<Leaf<int>*>(NewNode(TreeLevel, result, dataTuple));
-            std::cout << "Null";
-            //return result->value;
+            //CurrentType
+            currHead->next = static_cast<Leaf<int>*>(NewNode(TreeLevel, result));
+
+            return result->value;
         }
-    }    //throw std::runtime_error("TreeList::GetValue: unexpected state");
+        TreeLevel -= 1;
+      //  }
+           auto currNode1 = std::get<1>(trees).Find(currNode, std::get<1>(paramsTuple));
+            if (currNode1 != nullptr) { // I have found requested node, either return result or go
+                if (TreeLevel == 0) {
+                    std::cout << "Node found!" << std::endl;
+                    return currNode1->value;
+                }
+                // one level further
+                currHead = currNode1;
+            }
+            else { // I have not found requested node, add it and return result
+                std::cout << "Not found" << std::endl;
+                Leaf<int>* result;
+                //currHead->next = InsertNode(currHead->next, data, TreeLevel, result);
+                //CurrentType
+                currHead->next = static_cast<Leaf<int>*>(NewNode(TreeLevel, result));
+
+                return result->value;
+            }
+     
+    throw std::runtime_error("TreeList::GetValue: unexpected state");
 }
 
 // Вспомогательная функция для создания одного узла на уровне idx
@@ -93,26 +120,27 @@ void TreeList<ReturnType, InputTypes...>::createAllNodes(void* nodes[], const st
 }
 
 template<typename ReturnType, typename... InputTypes>
-void* TreeList<ReturnType, InputTypes...>::NewNode(const int& TreeLevel, Leaf<int>*& value) {
-    dataTuple = std::make_tuple(params);
+Leaf<int>* TreeList<ReturnType, InputTypes...>::NewNode(const int& TreeLevel, Leaf<int>*& value) {
     void* nodes[paramsCount];
+    std::cout << "new node";
 
-    createAllNodes(nodes, dataTuple, std::index_sequence_for<InputTypes...>{});
+    createAllNodes(nodes, paramsTuple, std::index_sequence_for<InputTypes...>{});
 
     // Связываем только до TreeLevel
     [&] <size_t... Is>(std::index_sequence<Is...>) {
         ((Is == static_cast<size_t>(TreeLevel) ?
-            linkNodes<Is>(nodes, dataTuple) : void()), ...);
+            linkNodes<Is>(nodes, paramsTuple) : void()), ...);
     }(std::index_sequence_for<InputTypes...>{});
 
     // Получаем верхний
-    void* node = nodes[TreeLevel];
+    using LastType = std::tuple_element_t<paramsCount - 1, tupleOfTypes>;
+    auto* lastNode = static_cast<Leaf<LastType>*>(nodes[paramsCount - 1]);
 
     ReturnType* tmpVal = new ReturnType;
-    *tmpVal = func_(params...);
-    node->value = static_cast<void*>(tmpVal);
+    *tmpVal = std::apply(func_, paramsTuple);
+    lastNode->value = static_cast<void*>(tmpVal);
 
-    return node;
+    return lastNode;
 }
 
 //// CleanTree
@@ -224,12 +252,13 @@ void* TreeList<ReturnType, InputTypes...>::NewNode(const int& TreeLevel, Leaf<in
 //    return std::make_tuple(std::get<Is>(trees).CreateLeaf()...);
 //}
 
-//// InsertNode <T> todo
+// InsertNode <T> todo
 //template<typename ReturnType, typename... InputTypes>
-//Leaf<InputType>* TreeList<ReturnType, InputTypes...>::InsertNode(Leaf<InputType>* node, InputType* data,
+//Leaf<InputType>* TreeList<ReturnType, InputTypes...>::InsertNode(Leaf<InputType>* node, 
+//    InputType* data,
 //    const int& TreeLevel, Leaf<InputType>*& value) {
 //    if (node == nullptr)
-//        return NewNode(data, TreeLevel, value);
+//        return NewNode(TreeLevel, value);
 //
 //    if (data[TreeLevel] > node->argument)
 //        node->right = InsertNode(node->right, data, TreeLevel, value);
@@ -238,7 +267,7 @@ void* TreeList<ReturnType, InputTypes...>::NewNode(const int& TreeLevel, Leaf<in
 //
 //   return Balance(node, data[TreeLevel]);
 //}
-//
+
 //// Balance
 //template<typename ReturnType, typename... InputTypes>
 //Leaf<InputType>* TreeList<ReturnType, InputTypes...>::Balance(Leaf<InputType>* node, InputType argument) {

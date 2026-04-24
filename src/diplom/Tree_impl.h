@@ -25,55 +25,51 @@ Leaf<T>* Tree<T>::CreateLeaf(T arg) {
     return new Leaf<T>(arg);
 }
 
+// private GetValue
+//template<typename T>
+//template<typename... InputTypes>
+//void* Tree<T>::GetValue(constexpr int treeLevel, Leaf<T>* head, std::tuple<InputTypes...> paramsTuple) {
 //
-//// private GetValue
-//template<T>
-//void* Tree<T>::GetValue(int TreeLevel, Leaf<InputType>* head,
-//    InputType* data) {
-//    Leaf<InputType>* currHead = head;
-//    Leaf<InputType>* currNode;
-//
-//    InputType functionParam;
-//    for (; TreeLevel >= 0; --TreeLevel) { // cycle traversing all parameters (all Trees)
-//        functionParam = data[TreeLevel];
-//        currNode = currHead->next;
-//
-//        currNode = Find(currNode, functionParam);
-//        if (currNode != nullptr) { // I have found requested node, either return result or go
-//            if (TreeLevel == 0) {
-//                std::cout << "Node found!" << std::endl;
-//                return currNode->value;
-//            }
-//            else // one level further
-//                currHead = currNode;
+//    currNode = Find(head, functionParam);
+//    if (currNode != nullptr) { // I have found requested node, either return result or go
+//        if (TreeLevel == 0) {
+//            std::cout << "Node found!" << std::endl;
+//            return currNode->value;
 //        }
-//        else { // I have not found requested node, add it and return result
-//            Leaf<InputType>* result;
-//            currHead->next = InsertNode(currHead->next, data, TreeLevel, result);
-//            return result->value;
-//        }
+//        else // one level further
+//            currHead = currNode;
 //    }
-//    throw std::runtime_error("Tree::GetValue: unexpected state");
+//    else { // I have not found requested node, add it and return result
+//        Leaf<InputType>* result;
+//        currHead->next = InsertNode(currHead->next, data, TreeLevel, result);
+//        return result->value;
+//    }
+
 //}
 
 // Find <T> 
 template<typename T>
-Leaf<T>* Tree<T>::Find(Leaf<T>* currNode, T searchVal)
+Leaf<T>* Tree<T>::Find(Leaf<T>* currNode, const T& value)
 {
-    while (true) {               // cycle across all leaves on a given Tree
-        if (currNode == nullptr) // I have not found given node, need to add
-            return nullptr;
-        if (searchVal == currNode->argument) {
-            break;
-        }
-        else if (searchVal < currNode->argument)
-            currNode = currNode->left;
-        else
-            currNode = currNode->right;
-    }                // cycle across all leaves
+    {
+        while (true) {       
+            std::cout << "FIND EXECUTES" << std::endl;
+            // cycle across all leaves on a given Tree
+            if (currNode == nullptr) // I have not found given node, need to add
+                return currNode;
+            if (value == currNode->argument) {
+                break;
+            }
+            else if (value < currNode->argument)
+                currNode = currNode->left;
+            else
+                currNode = currNode->right;
+        }                // cycle across all leaves
+        std::cout << "FIND DONE" << std::endl;
 
-    return currNode;
-
+        //if currNode == nullptr { currNode = NewNode() }
+        return currNode;
+    }
 }
 //
 //// CleanTree <T> todo
@@ -119,11 +115,10 @@ Leaf<T>* Tree<T>::Find(Leaf<T>* currNode, T searchVal)
 //
 //    return node;
 //}
-//
+
 //// InsertNode <T> todo
 //template<T>
-//Leaf<InputType>* Tree<T>::InsertNode(Leaf<InputType>* node, InputType* data,
-//    const int& TreeLevel, Leaf<InputType>*& value) {
+//Leaf<T>* Tree<T>::InsertNode(Leaf<T>* node, T* data, Leaf<InputType>*& value) {
 //    if (node == nullptr)
 //        return NewNode(data, TreeLevel, value);
 //

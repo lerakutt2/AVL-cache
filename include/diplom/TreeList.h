@@ -26,15 +26,18 @@ public:
 
 private:
     std::function<ReturnType(InputTypes...)> func_;   
-    Leaf<int> head;
-    using tupleOfTypes = std::tuple<InputTypes...>;
-    int paramsCount = sizeof...(InputTypes);
+    Leaf<int> head; 
+    static constexpr int paramsCount = sizeof...(InputTypes);
     std::tuple<Tree<InputTypes>...> trees;
-    InputTypes params...;
-    std::tuple<InputTypes...> paramsTuple = std::tuple<params...>;
+    std::tuple<InputTypes...> paramsTuple;
+
+    using tupleOfTypes = std::tuple<InputTypes...>;
+    using LastType = std::tuple_element_t<paramsCount - 1, tupleOfTypes>;
 
     void CreateTrees();
     void* GetValue(int TreeLevel);
+
+    Leaf<int>* find(int level, Leaf<int>* currNode);
 
     //void CleanTree(Leaf<InputType>* leaf);
 
@@ -51,7 +54,8 @@ private:
     void createAllNodes(void* nodes[], const std::tuple<InputTypes...>& data,
         std::index_sequence<Is...>);
 
-    void* NewNode(const int& TreeLevel, Leaf<int>*& value);
+    // вместо int будет LastType
+    Leaf<int>* NewNode(const int& TreeLevel, Leaf<int>*& value);
 
     //template<size_t... Is>
     //auto CreateLeaves(std::index_sequence<Is...>) -> decltype(auto);

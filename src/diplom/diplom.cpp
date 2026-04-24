@@ -46,17 +46,18 @@ void Calculate(int numberOfLines) {
     cout << setprecision(14) << "Wallclock time   (s) = " << ((static_cast<double>(timeEnd.tv_sec - timeStart.tv_sec + (timeEnd.tv_usec - timeStart.tv_usec) * 0.000001))) << endl;
 }
 
-
+//
 //void CalculateWithTree(int numberOfLines) {
 //    clock_t startTime, endTime;
 //    struct timeval timeStart, timeEnd;
 //    gettimeofday(&timeStart, NULL);
-//    startTime = clock();
+//
 //    // start of code to measure
 //
-//    __float128 result;
+//    __float128 result; 
 //
-//    TreeList<__float128, int, __float128, __float128, __float128, __float128> GGTree(GG);
+//    TreeList<__float128, int, __float128, __float128, __float128, __float128> GGTree(GG); // ускорение в зависимости от количества повторов (один и тот же кусочек данных снова)
+//    startTime = clock();
 //    for (int idx = 0; idx < numberOfLines; ++idx) {
 //        //ggRes = GG(L[idx], ALPHA[idx], GAMMA[idx], P[idx], GAM[idx]); // заменить
 //
@@ -97,10 +98,10 @@ void CalculateSum() {
         {11, 12}, {13, 14}, {15, 16}, {5, 6}, {19, 20}
     };
 
-    TreeList tree(Sum);
+    TreeList tree(Sum); // например второй аргумент это количество входных.
     //TreeList<int, int, int> tree(Sum);
     // Вызываем функцию для каждой пары
-    for (size_t i = 0; i < pairs.size(); ++i) {
+    for (size_t i = 0; i < pairs.size(); ++i) { 
         int result = tree.GetValue(pairs[i].first, pairs[i].second);
         std::cout << "Pair " << i + 1 << ": " << pairs[i].first << " + "
             << pairs[i].second << " = " << result << std::endl;

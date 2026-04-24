@@ -4,7 +4,7 @@
 
 // Будем использовать вариативные шаблоны. Запись  typename... InputTypes значит, что шаблон может принять 0 или более типов в качестве своих аргументов.
 /// <summary>
-/// Класс, содержащий дерево для конкретной функции (пока GG)
+/// Класс, содержащий дерево конкретного параметра функции
 /// </summary>
 /// <typeparam name="...Args">Типы входных параметров (по порядку)</typeparam>
 /// <typeparam name="ReturnType">Тип выходного параметра</typeparam>
@@ -34,7 +34,7 @@ public:
     //Leaf<InputType>* InsertNode(Leaf<InputType>* node, InputType* data,
     //    const int& treeLevel, Leaf<InputType>*& value);
 
-    Leaf<T>* Find(Leaf<T>* currNode, T searchVal);
+    Leaf<T>* Find(Leaf<T>* currNode, const T& value);
 
     //Leaf<InputType>* Balance(Leaf<InputType>* node, InputType argument);
 
