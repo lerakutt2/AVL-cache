@@ -14,7 +14,6 @@
 //    //if (head.right) CleanTree(head.right);
 //    //if (head.next) CleanTree(head.next);
 //}
-
 template<typename T>
 Leaf<T>* Tree<T>::CreateLeaf() {
     return new Leaf<T>();
@@ -25,6 +24,15 @@ Leaf<T>* Tree<T>::CreateLeaf(T arg) {
     return new Leaf<T>(arg);
 }
 
+template<typename T>
+void Tree<T>::SetValue(T val) {
+    searchValue = val;
+}
+
+template<typename T>
+void Tree<T>::Link(Tree* tree) {
+    nextTree = tree;
+}
 // private GetValue
 //template<typename T>
 //template<typename... InputTypes>

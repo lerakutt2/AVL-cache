@@ -17,9 +17,13 @@ public:
     Tree& operator=(const Tree&) = default; // Копирующее присваивание
     Tree& operator=(Tree&&) = default;      // Перемещающее присваивание
     ~Tree() = default;
-
+    T searchValue;
+    Tree* nextTree;
     //void GetValue(InputType* data, ReturnType& result);
     //Leaf<T>* CreateLeaf(T arg);
+
+    void SetValue(T val);
+    void Link(Tree* tree);
 
     Leaf<T>* CreateLeaf();
     Leaf<T>* CreateLeaf(T arg);

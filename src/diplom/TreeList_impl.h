@@ -23,16 +23,47 @@ TreeList<ReturnType, InputTypes...>::~TreeList() {
 template<typename ReturnType, typename... InputTypes>
 void TreeList<ReturnType, InputTypes...>::CreateTrees() {
     trees = std::make_tuple(Tree<InputTypes>()...);
+
+    [&] <size_t... Is>(std::index_sequence<Is...>) {
+        ((Is < paramsCount - 1 ?
+            LinkTrees<Is>() : void()), ...);
+    }(std::index_sequence_for<InputTypes...>{});
+
+}
+
+
+template<typename ReturnType, typename... InputTypes>
+template<size_t idx>
+void TreeList<ReturnType, InputTypes...>::LinkTrees() {
+    if constexpr (idx + 1 < sizeof...(InputTypes)) {
+        std::get<idx>(trees).Link(&std::get<idx + 1>(trees));
+    }
 }
 
 // public GetValue
 template<typename ReturnType, typename... InputTypes>
 ReturnType TreeList<ReturnType, InputTypes...>::GetValue(InputTypes... Inputdata) {
+
     paramsTuple = std::make_tuple(Inputdata...);
+
+    // обновляем в деревьях значения в соответствии с переданными параметрами
+    [&] <size_t... Is>(std::index_sequence<Is...>) {
+        ((Is < paramsCount ?
+            SetValues<Is>(paramsTuple) : void()), ...);
+    }(std::index_sequence_for<InputTypes...>{});
+    //std::cout << "val 1 " << std::get<0>(trees).nextTree->searchValue << std::endl;
+    //std::cout << "val 2 " << std::get<1>(trees).searchValue << std::endl;
+
     void* res = GetValue(paramsCount - 1);
     ReturnType result = *static_cast<ReturnType*>(res);
     
     return result;
+}
+
+template<typename ReturnType, typename... InputTypes>
+template<size_t idx>
+void TreeList<ReturnType, InputTypes...>::SetValues(const std::tuple<InputTypes...>& data) {
+    std::get<idx>(trees).SetValue(std::get<idx>(data));
 }
 
 // private GetValue

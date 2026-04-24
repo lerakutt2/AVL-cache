@@ -36,6 +36,11 @@ private:
 
     void CreateTrees();
     void* GetValue(int TreeLevel);
+    template<size_t idx>
+    void LinkTrees();
+
+    template<size_t idx>
+    void SetValues(const std::tuple<InputTypes...>& data);
 
     Leaf<int>* find(int level, Leaf<int>* currNode);
 
