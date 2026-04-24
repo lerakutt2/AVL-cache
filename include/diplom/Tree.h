@@ -22,6 +22,8 @@ public:
     //Leaf<T>* CreateLeaf(T arg);
 
     Leaf<T>* CreateLeaf();
+    Leaf<T>* CreateLeaf(T arg);
+
     //Leaf<InputType> head;
     //void* GetValue(int treeLevel, Leaf<InputType>* head, InputType* data);
 

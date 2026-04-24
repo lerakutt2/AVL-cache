@@ -20,6 +20,11 @@ Leaf<T>* Tree<T>::CreateLeaf() {
     return new Leaf<T>();
 }
 
+template<typename T>
+Leaf<T>* Tree<T>::CreateLeaf(T arg) {
+    return new Leaf<T>(arg);
+}
+
 //
 //// private GetValue
 //template<T>
@@ -51,7 +56,7 @@ Leaf<T>* Tree<T>::CreateLeaf() {
 //    throw std::runtime_error("Tree::GetValue: unexpected state");
 //}
 
-// Find <T> todo
+// Find <T> 
 template<typename T>
 Leaf<T>* Tree<T>::Find(Leaf<T>* currNode, T searchVal)
 {
@@ -91,10 +96,10 @@ Leaf<T>* Tree<T>::Find(Leaf<T>* currNode, T searchVal)
 //
 //    delete leaf;
 //}
-//
-//// NewNode <T> todo
+
+// NewNode <T> todo
 //template<T>
-//Leaf<InputType>* Tree<T>::NewNode(T* data, const int& TreeLevel,
+//Leaf<InputType>* Tree<T>::NewNode(T data, const int& TreeLevel,
 //    Leaf<InputType>*& value) {
 //    Leaf<InputType>* node = new Leaf<InputType>(data[TreeLevel]);
 //    Leaf<InputType>* lastNode = node;
@@ -129,7 +134,7 @@ Leaf<T>* Tree<T>::Find(Leaf<T>* currNode, T searchVal)
 //
 //    return Balance(node, data[TreeLevel]);
 //}
-//
+
 //// Balance
 //template<T>
 //Leaf<InputType>* Tree<T>::Balance(Leaf<InputType>* node, InputType argument) {
