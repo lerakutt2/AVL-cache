@@ -4,26 +4,6 @@
 #include <functional>
 #include <tuple>
 
-//// Constructor
-//template<typename T>
-//Tree<T>::Tree() {}
-//// Destructor
-//template<typename T>
-//Tree<T>::~Tree() {
-//    //if (head.left) CleanTree(head.left);
-//    //if (head.right) CleanTree(head.right);
-//    //if (head.next) CleanTree(head.next);
-//}
-template<typename T>
-Leaf<T>* Tree<T>::CreateLeaf() {
-    return new Leaf<T>();
-}
-
-template<typename T>
-Leaf<T>* Tree<T>::CreateLeaf(T arg) {
-    return new Leaf<T>(arg);
-}
-
 template<typename T>
 void Tree<T>::SetValue(T val) {
     searchValue = val;
@@ -40,7 +20,7 @@ Leaf<T>* Tree<T>::GetValue(Leaf<T>* currHead) {
     Leaf<T>* currNode = currHead->next;
     currNode = Find(currNode, searchValue);
     if (currNode != nullptr) { // I have found requested node, either return result or go
-        if (nextTree == nullptr) { // если текущее дерево последнее
+        if (nextTree == nullptr) { // if current tree is the last one
             std::cout << "Node found!" << std::endl;
             return currNode;
         }
@@ -74,31 +54,9 @@ Leaf<T>* Tree<T>::Find(Leaf<T>* currNode, const T& value)
                 currNode = currNode->right;
         }                // cycle across all leaves
 
-                         //if currNode == nullptr { currNode = NewNode() }
         return currNode;
     }
 }
-//
-//// CleanTree <T> todo
-//template<T>
-//void Tree<T>::CleanTree(Leaf<T>* leaf) {
-//    if (leaf == nullptr)
-//        return;
-//
-//    Leaf<T>* leftChild = leaf->left;
-//    Leaf<T>* rightChild = leaf->right;
-//    Leaf<T>* nextChild = leaf->next;
-//
-//    CleanTree(leftChild);
-//    CleanTree(rightChild);
-//    CleanTree(nextChild);
-//
-//    if (leaf->value != nullptr) {
-//        delete static_cast<ReturnType*>(leaf->value);
-//    }
-//
-//    delete leaf;
-//}
 
 // NewNode <T> todo
 template<typename T>

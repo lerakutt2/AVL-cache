@@ -25,63 +25,25 @@ public:
     ReturnType GetValue(InputTypes... data);
 
 private:
+    using FirstType = std::tuple_element_t<0, std::tuple<InputTypes...>>;
     std::function<ReturnType(InputTypes...)> func_;   
-    Leaf<int> head; 
+    Leaf<FirstType> head;
+
     static constexpr int paramsCount = sizeof...(InputTypes);
+
     std::tuple<Tree<InputTypes>...> trees;
     std::tuple<InputTypes...> paramsTuple;
 
-    using tupleOfTypes = std::tuple<InputTypes...>;
-    using LastType = std::tuple_element_t<paramsCount - 1, tupleOfTypes>;
-
     void CreateTrees();
     void* GetValue(int TreeLevel);
+
     template<size_t idx>
     void LinkTrees();
 
     template<size_t idx>
     void SetValues(const std::tuple<InputTypes...>& data);
 
-    Leaf<int>* find(int level, Leaf<int>* currNode);
-
     //void CleanTree(Leaf<InputType>* leaf);
-
-    // Вспомогательная функция для создания одного узла на уровне idx
-    template<size_t idx>
-    void* createNodeAtLevel(const std::tuple<InputTypes...>& data);
-
-    // Рекурсивное связывание узлов
-    template<size_t idx>
-    void linkNodes(void* nodes[], const std::tuple<InputTypes...>& data);
-
-    // Создание всех узлов
-    template<size_t... Is>
-    void createAllNodes(void* nodes[], const std::tuple<InputTypes...>& data,
-        std::index_sequence<Is...>);
-
-    // вместо int будет LastType
-    Leaf<int>* NewNode(const int& TreeLevel, Leaf<int>*& value);
-
-    //template<size_t... Is>
-    //auto CreateLeaves(std::index_sequence<Is...>) -> decltype(auto);
-
-    //template<size_t... Is>
-    //void ConnectLeavesRecursive(auto& leaves, int treeLevel, std::index_sequence<Is...>);
-
-    //Leaf<InputType>* InsertNode(Leaf<InputType>* node, InputType* data,
-     //   const int& treeLevel, Leaf<InputType>*& value);
-
-    /*Leaf<InputType>* Find(Leaf<InputType>* currNode, InputType searchVal);
-
-    Leaf<InputType>* Balance(Leaf<InputType>* node, InputType argument);
-
-    int Height(Leaf<InputType>* node);
-
-    Leaf<InputType>* RightRotate(Leaf<InputType>* y);
-
-    Leaf<InputType>* LeftRotate(Leaf<InputType>* x);
-
-    int GetBalance(Leaf<InputType>* N);*/
 };
 
 // deduction guide
