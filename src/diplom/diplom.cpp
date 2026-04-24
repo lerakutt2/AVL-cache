@@ -46,21 +46,20 @@ void Calculate(int numberOfLines) {
     cout << setprecision(14) << "Wallclock time   (s) = " << ((static_cast<double>(timeEnd.tv_sec - timeStart.tv_sec + (timeEnd.tv_usec - timeStart.tv_usec) * 0.000001))) << endl;
 }
 
-//
+
 //void CalculateWithTree(int numberOfLines) {
 //    clock_t startTime, endTime;
 //    struct timeval timeStart, timeEnd;
 //    gettimeofday(&timeStart, NULL);
 //
+//    __float128 result;
+//
+////    TreeList<__float128, int, __float128, __float128, __float128, __float128> GGTree(GG); // ускорение в зависимости от количества повторов (один и тот же кусочек данных снова)
 //    // start of code to measure
+//    TreeList GGtree(GG); // например второй аргумент это количество входных.
 //
-//    __float128 result; 
-//
-//    TreeList<__float128, int, __float128, __float128, __float128, __float128> GGTree(GG); // ускорение в зависимости от количества повторов (один и тот же кусочек данных снова)
 //    startTime = clock();
 //    for (int idx = 0; idx < numberOfLines; ++idx) {
-//        //ggRes = GG(L[idx], ALPHA[idx], GAMMA[idx], P[idx], GAM[idx]); // заменить
-//
 //        __float128* data = new __float128[5]{
 //            static_cast<__float128>(L[idx]),
 //            ALPHA[idx],
@@ -73,13 +72,13 @@ void Calculate(int numberOfLines) {
 //        cout << "Параметры функции:" << L[idx] << " ";
 //        printFloat128(4, ALPHA[idx], GAMMA[idx], P[idx], GAM[idx]);
 //
-//        //result = GGtree.GetValue(L[idx], ALPHA[idx], GAMMA[idx], P[idx], GAM[idx]);
-//
 //        //cout << "correct ";
 //        //printFloat128(ggResult[idx]);
+//
+//        result = GGtree.GetValue(L[idx], ALPHA[idx], GAMMA[idx], P[idx], GAM[idx]);
 //        cout << "tree: ";
-//        printFloat128(1, result);
-//        cout << endl;
+//        printFloat128(result);
+//        cout<< endl;
 //        //cout << compareFloat128(ggResult[idx], result);
 //        delete[] data;
 //    }

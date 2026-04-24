@@ -54,10 +54,14 @@ ReturnType TreeList<ReturnType, InputTypes...>::GetValue(InputTypes... Inputdata
     //std::cout << "val 1 " << std::get<0>(trees).nextTree->searchValue << std::endl;
     //std::cout << "val 2 " << std::get<1>(trees).searchValue << std::endl;
 
-    void* res = GetValue(paramsCount - 1);
-    ReturnType result = *static_cast<ReturnType*>(res);
-    
-    return result;
+    auto res = std::get<0>(trees).GetValue(&head);
+    if (res->value == nullptr) {
+        ReturnType* tmpRes = new ReturnType;
+        *tmpRes = func_(Inputdata...);
+        res->value = static_cast<void*>(tmpRes);
+    }
+
+    return *static_cast<ReturnType*>(res->value);
 }
 
 template<typename ReturnType, typename... InputTypes>

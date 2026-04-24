@@ -18,7 +18,7 @@ public:
     Tree& operator=(Tree&&) = default;      // Перемещающее присваивание
     ~Tree() = default;
     T searchValue;
-    Tree* nextTree;
+    Tree* nextTree = nullptr;
     //void GetValue(InputType* data, ReturnType& result);
     //Leaf<T>* CreateLeaf(T arg);
 
@@ -27,8 +27,17 @@ public:
 
     Leaf<T>* CreateLeaf();
     Leaf<T>* CreateLeaf(T arg);
+    Leaf<T>* GetValue(Leaf<T>* currHead);
+    Leaf<T>* NewNode(Leaf<T>* node, Leaf<T>*& lastLeaf);
+    Leaf<T>* InsertNode(Leaf<T>* node, Leaf<T>*& lastLeaf);
+    Leaf<T>* Balance(Leaf<T>* node);
+    int Height(Leaf<T>* node);
+    Leaf<T>* RightRotate(Leaf<T>* y);
+    Leaf<T>* LeftRotate(Leaf<T>* x);
+    int GetBalance(Leaf<T>* N);
 
     //Leaf<InputType> head;
+    
     //void* GetValue(int treeLevel, Leaf<InputType>* head, InputType* data);
 
     //void CleanTree(Leaf<InputType>* leaf);
