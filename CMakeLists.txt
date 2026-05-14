@@ -76,9 +76,9 @@ file(GLOB SOURCES "src/diplom/*.cpp")
 # Создаем исполняемый файл
 add_executable(diplom_new ${SOURCES})
 
-# Линкуем с quadmath
-target_link_libraries(diplom_new ${QUADMATH_LIBRARY})
+# Привязываем флаг компиляции конкретно к нашему проекту
+target_compile_options(diplom_new PRIVATE -fext-numeric-literals)
 
-# Для отладки покажем, что мы нашли
-message(STATUS "QUADMATH_INCLUDE_DIR: ${QUADMATH_INCLUDE_DIR}")
-message(STATUS "QUADMATH_LIBRARY: ${QUADMATH_LIBRARY}")
+# Передаем инклюды и линкуем библиотеку quadmath правильным способом
+target_include_directories(diplom_new PRIVATE ${QUADMATH_INCLUDE_DIR})
+target_link_libraries(diplom_new PRIVATE ${QUADMATH_LIBRARY})
