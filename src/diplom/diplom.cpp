@@ -23,30 +23,30 @@ std::vector<__float128> GAM;
 std::vector<int> L;
 std::vector<__float128> ggResult;
 
-void Calculate(int numberOfLines) {
-    clock_t startTime, endTime;
-    struct timeval timeStart, timeEnd;
-    gettimeofday(&timeStart, NULL);
-    startTime = clock();
-    // start of code to measure
-
-    char buf[128];
-    __float128 result;
-
-    for (int idx = 0; idx < numberOfLines; ++idx) {
-        result = GG(L[idx], ALPHA[idx], GAMMA[idx], P[idx], GAM[idx]);
-        quadmath_snprintf(buf, sizeof buf, "%*.34Qf", 10, result);
-        cout << "Значение функции: " << buf << endl;
-    }
-
-    // end of code to measure
-    endTime = clock();
-    gettimeofday(&timeEnd, NULL);
-    cout << setprecision(14) << "Calculation time (s) = " << ((static_cast<double>(endTime - startTime)) / CLOCKS_PER_SEC) << endl;
-    cout << setprecision(14) << "Wallclock time   (s) = " << ((static_cast<double>(timeEnd.tv_sec - timeStart.tv_sec + (timeEnd.tv_usec - timeStart.tv_usec) * 0.000001))) << endl;
-}
-
-
+//void Calculate(int numberOfLines) {
+//    clock_t startTime, endTime;
+//    struct timeval timeStart, timeEnd;
+//    gettimeofday(&timeStart, NULL);
+//    startTime = clock();
+//    // start of code to measure
+//
+//    char buf[128];
+//    __float128 result;
+//
+//    for (int idx = 0; idx < numberOfLines; ++idx) {
+//        result = GG(L[idx], ALPHA[idx], GAMMA[idx], P[idx], GAM[idx]);
+//        quadmath_snprintf(buf, sizeof buf, "%*.34Qf", 10, result);
+//        cout << "Значение функции: " << buf << endl;
+//    }
+//
+//    // end of code to measure
+//    endTime = clock();
+//    gettimeofday(&timeEnd, NULL);
+//    cout << setprecision(14) << "Calculation time (s) = " << ((static_cast<double>(endTime - startTime)) / CLOCKS_PER_SEC) << endl;
+//    cout << setprecision(14) << "Wallclock time   (s) = " << ((static_cast<double>(timeEnd.tv_sec - timeStart.tv_sec + (timeEnd.tv_usec - timeStart.tv_usec) * 0.000001))) << endl;
+//}
+//
+//
 //void CalculateWithTree(int numberOfLines) {
 //    clock_t startTime, endTime;
 //    struct timeval timeStart, timeEnd;
@@ -92,7 +92,7 @@ void Calculate(int numberOfLines) {
 
 void CalculateSum() {
     // Создаем 10 пар целочисленных значений
-    std::vector<std::pair<int, int>> pairs = {
+    std::vector<std::pair<int, double>> pairs = {
         {1, 2}, {1, 2}, {5, 6}, {7, 8}, {9, 10},
         {11, 12}, {13, 14}, {15, 16}, {5, 6}, {19, 20}
     };
@@ -101,7 +101,7 @@ void CalculateSum() {
     //TreeList<int, int, int> tree(Sum);
     // Вызываем функцию для каждой пары
     for (size_t i = 0; i < pairs.size(); ++i) { 
-        int result = tree.GetValue(pairs[i].first, pairs[i].second);
+        double result = tree.GetValue(pairs[i].first, pairs[i].second);
         std::cout << "Pair " << i + 1 << ": " << pairs[i].first << " + "
             << pairs[i].second << " = " << result << std::endl;
     }
@@ -126,5 +126,6 @@ int main(void) {
     //    CalculateWithTree(numberOfLines[i]);
     //}
     CalculateSum();
+    TreeList tree(Sum);
     return 0;
 }
