@@ -26,7 +26,7 @@ Leaf<T>* Tree<T>::GetValue(Leaf<T>* currHead) {
         }
         else // one level further
             return nextTree->GetValue(currNode);
-    }
+    } // идеи : в любом случае возвращаем курнод. в классе выше идет проверка он нал или нет и если да то у след дерева гетвалю
     else { // I have not found requested node, add it and return it
         Leaf<T>* result;
         currHead->next = InsertNode(currHead->next, result);

@@ -18,22 +18,20 @@ TreeList<ReturnType, InputTypes...>::~TreeList() {
 }
 
 template<typename ReturnType, typename... InputTypes>
-void TreeList<ReturnType, InputTypes...>::CreateTrees() {
+void TreeList<ReturnType, InputTypes...>::CreateTrees() {    
     trees = std::make_tuple(Tree<InputTypes>()...);
-
     [&] <size_t... Is>(std::index_sequence<Is...>) {
         ((Is < paramsCount - 1 ?
-            LinkTrees<Is>() : void()), ...);
+            CreateTreeList<Is>() : void()), ...);
     }(std::index_sequence_for<InputTypes...>{});
 
 }
 
-
 template<typename ReturnType, typename... InputTypes>
 template<size_t idx>
-void TreeList<ReturnType, InputTypes...>::LinkTrees() {
+void TreeList<ReturnType, InputTypes...>::CreateTreeList() {
     if constexpr (idx + 1 < sizeof...(InputTypes)) {
-        std::get<idx>(trees).Link(&std::get<idx + 1>(trees));
+        treelist.push_back(PossibleTypes{ std::get<idx>(trees)});
     }
 }
 
@@ -49,15 +47,49 @@ ReturnType TreeList<ReturnType, InputTypes...>::GetValue(InputTypes... params) {
             SetValues<Is>(paramsTuple) : void()), ...);
     }(std::index_sequence_for<InputTypes...>{});
 
-    auto res = std::get<0>(trees).GetValue(&head);
+    //auto res = std::get<0>(trees).GetValue(&head);
+    Link* it = treelist.head.get(); // итератор по списку Link
+    void* currNode = static_cast<void*>(&head); // Начинаем поиск с корня (nullptr)
+    //it = it->next.get();
+    
+    while (it) {
+        // Захватываем по ссылке [&], чтобы изменять currNode на каждой итерации
+        currNode = std::visit([&](auto& tree) -> void* {
+            // Передаем сам указатель (void*), а не его адрес
+            return tree.FindAbstract(currNode);
+            }, it->tree);
 
-    if (res->value == nullptr) {
+        it = it->next.get(); // Переходим к следующему дереву в списке
+    }
+    // auto currentLink = treelist.head.get();
+    //int val = std::get<0>(paramsTuple);
+
+    //// Используем std::visit для вызова метода Find
+    //std::visit([&](auto& tree) {
+    //    using T = typename std::decay_t<decltype(tree)>; // Достаем тип T из Tree<T>
+
+    //    if constexpr (std::is_same_v<T, FirstType>) {
+    //        // Эта ветка скомпилируется только для типа FirstType
+    //        auto* result = tree.Find(&head, val);
+    //    }
+    //    else {
+    //        // Логика для остальных типов (например, ошибка или другой head)
+    //        // tree.Find(...) здесь вызывать нельзя, так как типы не совпадут
+    //    }
+    //    }, currentLink->tree);
+
+   /* auto currNode = treelist.head.get()->tree->Find(&head, treelist->head->searchValue);
+    treelist.move_next();
+    while(treelist.current) {
+        auto currNode = treelist.current.get()->tree->Find(currNode, treelist->current->searchValue);
+    }
+    if (currNode->value == nullptr) {
         ReturnType* tmpRes = new ReturnType;
         *tmpRes = func_(params...);
-        res->value = static_cast<void*>(tmpRes);
+        currNode->value = static_cast<void*>(tmpRes);
     }
 
-    return *static_cast<ReturnType*>(res->value);
+    return *static_cast<ReturnType*>(currNode->value);*/
 }
 
 template<typename ReturnType, typename... InputTypes>
@@ -66,23 +98,23 @@ void TreeList<ReturnType, InputTypes...>::SetValues(const std::tuple<InputTypes.
     std::get<idx>(trees).SetValue(std::get<idx>(data));
 }
 
-//// CleanTree
-//template<typename ReturnType, typename... InputTypes>
-//void TreeList<ReturnType, InputTypes...>::CleanTree(Leaf<InputType>* leaf) {
-//    if (leaf == nullptr)
-//        return;
-//
-//    Leaf<InputType>* leftChild = leaf->left;
-//    Leaf<InputType>* rightChild = leaf->right;
-//    Leaf<InputType>* nextChild = leaf->next;
-//
-//    CleanTree(leftChild);
-//    CleanTree(rightChild);
-//    CleanTree(nextChild);
-//
-//    if (leaf->value != nullptr) {
-//        delete static_cast<ReturnType*>(leaf->value);
-//    }
-//
-//    delete leaf;
-//}
+////// CleanTree
+////template<typename ReturnType, typename... InputTypes>
+////void TreeList<ReturnType, InputTypes...>::CleanTree(Leaf<InputType>* leaf) {
+////    if (leaf == nullptr)
+////        return;
+////
+////    Leaf<InputType>* leftChild = leaf->left;
+////    Leaf<InputType>* rightChild = leaf->right;
+////    Leaf<InputType>* nextChild = leaf->next;
+////
+////    CleanTree(leftChild);
+////    CleanTree(rightChild);
+////    CleanTree(nextChild);
+////
+////    if (leaf->value != nullptr) {
+////        delete static_cast<ReturnType*>(leaf->value);
+////    }
+////
+////    delete leaf;
+////}

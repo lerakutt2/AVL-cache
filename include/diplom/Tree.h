@@ -22,6 +22,7 @@ public:
     Tree* nextTree = nullptr;
 
     void SetValue(T val);
+
     void Link(Tree* tree);
 
     Leaf<T>* GetValue(Leaf<T>* currHead);
@@ -34,28 +35,15 @@ public:
     Leaf<T>* LeftRotate(Leaf<T>* x);
     int GetBalance(Leaf<T>* N);
 
-    //Leaf<InputType> head;
-    
-    //void* GetValue(int treeLevel, Leaf<InputType>* head, InputType* data);
-
-    //void CleanTree(Leaf<InputType>* leaf);
-
-    //Leaf<InputType>* NewNode(InputType* data, const int& treeLevel, Leaf<InputType>*& value);
-
-    //Leaf<InputType>* InsertNode(Leaf<InputType>* node, InputType* data,
-    //    const int& treeLevel, Leaf<InputType>*& value);
-
     Leaf<T>* Find(Leaf<T>* currNode, const T& value);
 
-    //Leaf<InputType>* Balance(Leaf<InputType>* node, InputType argument);
-
-    //int Height(Leaf<InputType>* node);
-
-    //Leaf<InputType>* RightRotate(Leaf<InputType>* y);
-
-    //Leaf<InputType>* LeftRotate(Leaf<InputType>* x);
-
-    //int GetBalance(Leaf<InputType>* N);
+    void* FindAbstract(void* abstractNode) {
+        // Преобразование безопасно, только если abstractNode 
+        // является контейнером для узлов ТЕКУЩЕГО дерева, а не предыдущего.
+        // Убедитесь, что логика хранения узлов изолирована внутри дерева.
+        Leaf<T>* specificNode = static_cast<Leaf<T>*>(abstractNode);
+        return static_cast<void*>(Find(specificNode, searchValue));
+    }
 };
 
 // Подключаем реализацию шаблонных методов
