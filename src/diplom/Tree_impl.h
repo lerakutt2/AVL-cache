@@ -7,8 +7,6 @@
 template<typename T>
 void Tree<T>::SetValue(T val) {
     searchValue = val;
-    std::cout << "SetValue " << val << ", " << searchValue << std::endl;
-
 }
 
 template<typename T>
@@ -35,14 +33,9 @@ void* Tree<T>::InsertNodeAbstract(void* absHead) {
     Leaf<T>* currHead = *parentNodePtr;
 
     //Leaf<T>* currHead = static_cast<Leaf<T>*>(absHead);
-    std::cout << "currhead before " << (currHead ? currHead->argument : -1) << std::endl;
-
     Leaf<T>* result = nullptr;
     currHead = InsertNode(currHead, result);
     *parentNodePtr = currHead;
-
-    std::cout << "result->argument " << result->argument << std::endl;
-    std::cout << "currhead->argument " << currHead->argument << std::endl;
 
     return static_cast<void*>(&result->value);
 }
@@ -56,10 +49,6 @@ void* Tree<T>::NewNodeAbstract(void* absNode) {
 
     NewNode(newNode, result);
     *parentValuePtr = newNode;
-
-    std::cout << "New node result->argument " << newNode->argument << std::endl;
-    std::cout << "Connected to parent address: " << parentValuePtr << std::endl;
-
     return static_cast<void*>(&result->value);
 }
 
@@ -68,10 +57,6 @@ template<typename T>
 Leaf<T>* Tree<T>::NewNode(Leaf<T>*& node, Leaf<T>*& lastLeaf) {
     node = new Leaf<T>(searchValue);
     lastLeaf = node;
-    std::cout << "searchValue " << searchValue << std::endl;
-    std::cout << "node->argument " << node->argument << std::endl;
-    std::cout << "lastLeaf->argument " << lastLeaf->argument << std::endl;
-
     return node;
 }
 
@@ -79,17 +64,13 @@ Leaf<T>* Tree<T>::NewNode(Leaf<T>*& node, Leaf<T>*& lastLeaf) {
 template<typename T>
 Leaf<T>* Tree<T>::InsertNode(Leaf<T>*& node, Leaf<T>*& lastLeaf) {
     if (node == nullptr) {
-        std::cout << "calling new node from insert" << std::endl;
-
         return NewNode(node, lastLeaf);
     }
 
     if (searchValue > node->argument) {
-        std::cout << "gone right " << std::endl;
         node->right = InsertNode(node->right, lastLeaf);
     }
     else {
-        std::cout << "gone left " << std::endl;
         node->left = InsertNode(node->left, lastLeaf);
     }
     return Balance(node);

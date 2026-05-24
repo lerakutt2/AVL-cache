@@ -68,18 +68,15 @@ ReturnType TreeList<ReturnType, InputTypes...>::GetValue(InputTypes... params) {
 
     void* val;
     if (currNode == nullptr) {
-        std::cout << "=============NULLLLL==========\n";
+        std::cout << "CAHCHE MISS\n";
         currNode = std::visit([&](auto& tree) -> void* {
             void* tmp = tree->InsertNodeAbstract(currHead);
 
             void* updatedNode = *static_cast<void**>(currHead);
-            std::cout << "AFTER INSERT" << tree->GetValue(updatedNode) << std::endl;
             return tmp;
             }, it->tree); // нашел место для узла, создал, вернул след. от него
             
         while (it->next.get()) {
-
-            std::cout << "next tree exists\n";
             it = it->next.get(); // Переходим к следующему дереву в списке
 
             currNode = std::visit([&](auto& tree) -> void* {
@@ -90,13 +87,16 @@ ReturnType TreeList<ReturnType, InputTypes...>::GetValue(InputTypes... params) {
         ReturnType* tmpRes = new ReturnType;
         *tmpRes = func_(params...);
 
-        currNode = static_cast<void*>(tmpRes);
+        // Записываем указатель на результат физически в поле value последнего узла
+        *static_cast<void**>(currNode) = static_cast<void*>(tmpRes);
+
         val = tmpRes;
     }
     else if (!it->next.get()) { // нашли узел и это последнее дерево
-        std::cout << "==================== = LAST TREE====================== = \n";
-        val = currNode;
+        std::cout << "FOUND\n";
+        val = *static_cast<void**>(currNode);
     }
+
     if (val == nullptr) {
         throw std::runtime_error("Critial: val is nullptr");
     }
