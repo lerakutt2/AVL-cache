@@ -12,7 +12,7 @@
 #include <cstring>
 #include <iostream>
 #include <quadmath.h>
-#include <vector> 
+#include <vector>
 
 using namespace std;
 

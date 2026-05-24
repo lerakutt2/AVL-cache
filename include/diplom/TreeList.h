@@ -19,7 +19,7 @@
 template<typename ReturnType, typename... InputTypes>
 class TreeList {
 public:
-    using PossibleTypes = std::variant<Tree<InputTypes>...>;
+    using PossibleTypes = std::variant<Tree<InputTypes>*...>;
 
     struct Link {
         PossibleTypes tree;
@@ -75,7 +75,7 @@ public:
                 curr = curr->next.get();
             }
             if (!curr) throw std::out_of_range("Index out of range");
-            return curr->value;
+            return curr->tree;
         }
 
         void move_next() {
@@ -102,7 +102,7 @@ public:
     using FirstType = std::tuple_element_t<0, std::tuple<InputTypes...>>;
 
     std::function<ReturnType(InputTypes...)> func_;   
-    Leaf<FirstType> head;
+    Leaf<FirstType>* head = new Leaf<FirstType>();
         static constexpr int paramsCount = sizeof...(InputTypes);
 
     std::tuple<Tree<InputTypes>...> trees;
@@ -115,52 +115,7 @@ public:
     void SetValues(const std::tuple<InputTypes...>& data);
         ReturnType GetValue(InputTypes... data);
      std::tuple<InputTypes...> paramsTuple;
-
-
 };
-    //template<typename T, typename N>
-    //using TreePair = Link<T, N>;
-
-    //// Получаем N-й тип
-    //template<size_t I>
-    //using Nth = std::tuple_element_t<I, std::tuple<InputTypes...>>;
-
-    //// Если есть следующий - берём его, иначе void
-    //template<size_t I>
-    //using Next = std::conditional_t<
-    //    (I + 1 < sizeof...(InputTypes)),
-    //    Nth<I + 1>,
-    //    void
-    //    >;
-
-    //// Генерируем список индексов
-    //template<size_t... I>
-    //static auto TreeTuple(std::index_sequence<I...>)
-    //    -> std::tuple<TreePair<Nth<I>, Next<I>>...>;
-
-    //using Links = decltype(TreeTuple(std::index_sequence_for<InputTypes...>{}));
-    //Links trees;
-
-//    TreeList(TreeList&& other) noexcept;
-//    TreeList& operator=(TreeList&& other) noexcept;
-//
-//    ReturnType GetValue(InputTypes... data);
-//
-//private:
-//    std::function<ReturnType(InputTypes...)> func_;   
-//    Leaf<FirstType> head;
-//
-
-//
-//
-//    template<size_t idx>
-//    void LinkTrees();
-//
-//    template<size_t idx>
-//    void SetValues(const std::tuple<InputTypes...>& data);
-//
-//    //void CleanTree(Leaf<InputType>* leaf);
-//};
 
 // deduction guide
 template<typename ReturnType, typename... InputTypes>

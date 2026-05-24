@@ -25,9 +25,8 @@ public:
 
     void Link(Tree* tree);
 
-    Leaf<T>* GetValue(Leaf<T>* currHead);
-    Leaf<T>* NewNode(Leaf<T>* node, Leaf<T>*& lastLeaf);
-    Leaf<T>* InsertNode(Leaf<T>* node, Leaf<T>*& lastLeaf);
+    Leaf<T>* NewNode(Leaf<T>*& node, Leaf<T>*& lastLeaf);
+    Leaf<T>* InsertNode(Leaf<T>*& node, Leaf<T>*& lastLeaf);
 
     Leaf<T>* Balance(Leaf<T>* node);
     int Height(Leaf<T>* node);
@@ -37,13 +36,14 @@ public:
 
     Leaf<T>* Find(Leaf<T>* currNode, const T& value);
 
-    void* FindAbstract(void* abstractNode) {
-        // Преобразование безопасно, только если abstractNode 
-        // является контейнером для узлов ТЕКУЩЕГО дерева, а не предыдущего.
-        // Убедитесь, что логика хранения узлов изолирована внутри дерева.
-        Leaf<T>* specificNode = static_cast<Leaf<T>*>(abstractNode);
-        return static_cast<void*>(Find(specificNode, searchValue));
-    }
+    void* FindAbstract(void* abstractNode);
+    
+    void* InsertNodeAbstract(void* currHead);
+    void* NewNodeAbstract(void* absNode);
+    void SetValueAbstract(void* absNode, void* value);
+    T GetValue(void* absNode);
+    void* Next(void* absNode);
+
 };
 
 // Подключаем реализацию шаблонных методов

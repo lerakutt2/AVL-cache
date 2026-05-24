@@ -7,6 +7,8 @@
 template<typename T>
 void Tree<T>::SetValue(T val) {
     searchValue = val;
+    std::cout << "SetValue " << val << ", " << searchValue << std::endl;
+
 }
 
 template<typename T>
@@ -14,26 +16,93 @@ void Tree<T>::Link(Tree* tree) {
     nextTree = tree;
 }
 
-// private GetValue
 template<typename T>
-Leaf<T>* Tree<T>::GetValue(Leaf<T>* currHead) {
-    Leaf<T>* currNode = currHead->next;
-    currNode = Find(currNode, searchValue);
-    if (currNode != nullptr) { // I have found requested node, either return result or go
-        if (nextTree == nullptr) { // if current tree is the last one
-            std::cout << "Node found!" << std::endl;
-            return currNode;
-        }
-        else // one level further
-            return nextTree->GetValue(currNode);
-    } // идеи : в любом случае возвращаем курнод. в классе выше идет проверка он нал или нет и если да то у след дерева гетвалю
-    else { // I have not found requested node, add it and return it
-        Leaf<T>* result;
-        currHead->next = InsertNode(currHead->next, result);
-        return result;
-    }
-    throw std::runtime_error("Tree::GetValue: unexpected state");
+T Tree<T>::GetValue(void* absNode) {
+    Leaf<T>* currNode = static_cast<Leaf<T>*>(absNode);
+    return currNode == nullptr ? 0 : 1;
+}
 
+template<typename T>
+void Tree<T>::SetValueAbstract(void* absNode, void* value) {
+    Leaf<T>* currNode = static_cast<Leaf<T>*>(absNode);
+    currNode->value = value;
+}
+
+template<typename T>
+void* Tree<T>::InsertNodeAbstract(void* absHead) {
+    //void** parentValuePtr = static_cast<void**>(absHead);
+    Leaf<T>** parentNodePtr = static_cast<Leaf<T>**>(absHead);
+    Leaf<T>* currHead = *parentNodePtr;
+
+    //Leaf<T>* currHead = static_cast<Leaf<T>*>(absHead);
+    std::cout << "currhead before " << (currHead ? currHead->argument : -1) << std::endl;
+
+    Leaf<T>* result = nullptr;
+    currHead = InsertNode(currHead, result);
+    *parentNodePtr = currHead;
+
+    std::cout << "result->argument " << result->argument << std::endl;
+    std::cout << "currhead->argument " << currHead->argument << std::endl;
+
+    return static_cast<void*>(&result->value);
+}
+
+template<typename T>
+void* Tree<T>::NewNodeAbstract(void* absNode) {
+    Leaf<T>** parentValuePtr = static_cast<Leaf<T>**>(absNode);
+
+    Leaf<T>* result = nullptr;
+    Leaf<T>* newNode = nullptr;
+
+    NewNode(newNode, result);
+    *parentValuePtr = newNode;
+
+    std::cout << "New node result->argument " << newNode->argument << std::endl;
+    std::cout << "Connected to parent address: " << parentValuePtr << std::endl;
+
+    return static_cast<void*>(&result->value);
+}
+
+// NewNode <T> 
+template<typename T>
+Leaf<T>* Tree<T>::NewNode(Leaf<T>*& node, Leaf<T>*& lastLeaf) {
+    node = new Leaf<T>(searchValue);
+    lastLeaf = node;
+    std::cout << "searchValue " << searchValue << std::endl;
+    std::cout << "node->argument " << node->argument << std::endl;
+    std::cout << "lastLeaf->argument " << lastLeaf->argument << std::endl;
+
+    return node;
+}
+
+// InsertNode <T>
+template<typename T>
+Leaf<T>* Tree<T>::InsertNode(Leaf<T>*& node, Leaf<T>*& lastLeaf) {
+    if (node == nullptr) {
+        std::cout << "calling new node from insert" << std::endl;
+
+        return NewNode(node, lastLeaf);
+    }
+
+    if (searchValue > node->argument) {
+        std::cout << "gone right " << std::endl;
+        node->right = InsertNode(node->right, lastLeaf);
+    }
+    else {
+        std::cout << "gone left " << std::endl;
+        node->left = InsertNode(node->left, lastLeaf);
+    }
+    return Balance(node);
+}
+
+template<typename T>
+void* Tree<T>::FindAbstract(void* abstractNode) {
+    Leaf<T>* specificNode = static_cast<Leaf<T>*>(abstractNode);
+    Leaf<T>* found = Find(specificNode, searchValue);
+
+    if (found == nullptr) return nullptr;
+
+    return static_cast<void*>(&found->value);
 }
 
 // Find <T> 
@@ -58,31 +127,6 @@ Leaf<T>* Tree<T>::Find(Leaf<T>* currNode, const T& value)
     }
 }
 
-// NewNode <T> todo
-template<typename T>
-Leaf<T>* Tree<T>::NewNode(Leaf<T>* node, Leaf<T>*& lastLeaf) {
-    node = new Leaf<T>(searchValue);
-
-    if (nextTree != nullptr) // если текущее дерево не последнее
-        node->next = nextTree->NewNode(node->next, lastLeaf);
-
-    lastLeaf = node;
-    return node;
-}
-
-// InsertNode <T> todo
-template<typename T>
-Leaf<T>* Tree<T>::InsertNode(Leaf<T>* node, Leaf<T>*& lastLeaf) {
-    if (node == nullptr)
-        return NewNode(node, lastLeaf);
-
-    if (searchValue > node->argument)
-        node->right = InsertNode(node->right, lastLeaf);
-    else
-        node->left = InsertNode(node->left, lastLeaf);
-
-    return Balance(node);
-}
 
 // Balance
 template<typename T>

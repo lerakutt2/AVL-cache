@@ -21,7 +21,7 @@ template<typename ReturnType, typename... InputTypes>
 void TreeList<ReturnType, InputTypes...>::CreateTrees() {    
     trees = std::make_tuple(Tree<InputTypes>()...);
     [&] <size_t... Is>(std::index_sequence<Is...>) {
-        ((Is < paramsCount - 1 ?
+        ((Is < paramsCount ?
             CreateTreeList<Is>() : void()), ...);
     }(std::index_sequence_for<InputTypes...>{});
 
@@ -30,9 +30,7 @@ void TreeList<ReturnType, InputTypes...>::CreateTrees() {
 template<typename ReturnType, typename... InputTypes>
 template<size_t idx>
 void TreeList<ReturnType, InputTypes...>::CreateTreeList() {
-    if constexpr (idx + 1 < sizeof...(InputTypes)) {
-        treelist.push_back(PossibleTypes{ std::get<idx>(trees)});
-    }
+    treelist.push_back(PossibleTypes{ &std::get<idx>(trees) });
 }
 
 // public GetValue
@@ -47,49 +45,64 @@ ReturnType TreeList<ReturnType, InputTypes...>::GetValue(InputTypes... params) {
             SetValues<Is>(paramsTuple) : void()), ...);
     }(std::index_sequence_for<InputTypes...>{});
 
-    //auto res = std::get<0>(trees).GetValue(&head);
     Link* it = treelist.head.get(); // итератор по списку Link
-    void* currNode = static_cast<void*>(&head); // Ќачинаем поиск с корн€ (nullptr)
+
+    void* currHead = static_cast<void*>(&head->value);
+    void* currNode = static_cast<void*>(head->value);
+
     //it = it->next.get();
     
-    while (it) {
-        // «ахватываем по ссылке [&], чтобы измен€ть currNode на каждой итерации
+    while (true) {
         currNode = std::visit([&](auto& tree) -> void* {
-            // ѕередаем сам указатель (void*), а не его адрес
-            return tree.FindAbstract(currNode);
+            return tree->FindAbstract(currNode); 
             }, it->tree);
 
+        if (currNode == nullptr) break; // узел не найден
+        if (!it->next.get()) { // нашли узел и это последнее дерево
+            break;
+        }
+        currHead = currNode;
+        currNode = *static_cast<void**>(currNode);
         it = it->next.get(); // ѕереходим к следующему дереву в списке
     }
-    // auto currentLink = treelist.head.get();
-    //int val = std::get<0>(paramsTuple);
 
-    //// »спользуем std::visit дл€ вызова метода Find
-    //std::visit([&](auto& tree) {
-    //    using T = typename std::decay_t<decltype(tree)>; // ƒостаем тип T из Tree<T>
+    void* val;
+    if (currNode == nullptr) {
+        std::cout << "=============NULLLLL==========\n";
+        currNode = std::visit([&](auto& tree) -> void* {
+            void* tmp = tree->InsertNodeAbstract(currHead);
 
-    //    if constexpr (std::is_same_v<T, FirstType>) {
-    //        // Ёта ветка скомпилируетс€ только дл€ типа FirstType
-    //        auto* result = tree.Find(&head, val);
-    //    }
-    //    else {
-    //        // Ћогика дл€ остальных типов (например, ошибка или другой head)
-    //        // tree.Find(...) здесь вызывать нельз€, так как типы не совпадут
-    //    }
-    //    }, currentLink->tree);
+            void* updatedNode = *static_cast<void**>(currHead);
+            std::cout << "AFTER INSERT" << tree->GetValue(updatedNode) << std::endl;
+            return tmp;
+            }, it->tree); // нашел место дл€ узла, создал, вернул след. от него
+            
+        while (it->next.get()) {
 
-   /* auto currNode = treelist.head.get()->tree->Find(&head, treelist->head->searchValue);
-    treelist.move_next();
-    while(treelist.current) {
-        auto currNode = treelist.current.get()->tree->Find(currNode, treelist->current->searchValue);
-    }
-    if (currNode->value == nullptr) {
+            std::cout << "next tree exists\n";
+            it = it->next.get(); // ѕереходим к следующему дереву в списке
+
+            currNode = std::visit([&](auto& tree) -> void* {
+                return tree->NewNodeAbstract(currNode);
+                }, it->tree);
+        }
+
         ReturnType* tmpRes = new ReturnType;
         *tmpRes = func_(params...);
-        currNode->value = static_cast<void*>(tmpRes);
+
+        currNode = static_cast<void*>(tmpRes);
+        val = tmpRes;
+    }
+    else if (!it->next.get()) { // нашли узел и это последнее дерево
+        std::cout << "==================== = LAST TREE====================== = \n";
+        val = currNode;
+    }
+    if (val == nullptr) {
+        throw std::runtime_error("Critial: val is nullptr");
     }
 
-    return *static_cast<ReturnType*>(currNode->value);*/
+    ReturnType* typedPtr = static_cast<ReturnType*>(val);
+    return *typedPtr;
 }
 
 template<typename ReturnType, typename... InputTypes>
