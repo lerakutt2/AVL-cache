@@ -75,7 +75,11 @@ file(GLOB SOURCES "src/diplom/*.cpp")
 
 # Создаем исполняемый файл
 add_executable(diplom_new ${SOURCES})
-
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/ggParameters.txt"
+    "${CMAKE_CURRENT_BINARY_DIR}/ggParameters.txt"
+    COPYONLY
+)
 # Привязываем флаг компиляции конкретно к нашему проекту
 target_compile_options(diplom_new PRIVATE -fext-numeric-literals)
 

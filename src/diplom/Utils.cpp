@@ -31,7 +31,8 @@ void LoadData(int numberOfLines,
     std::vector<int>& L,
     std::vector<__float128>& ggResult) {
 
-    FILE* fpIn = fopen("../ggParameters.txt/ggParameters.txt", "r");
+
+    FILE* fpIn = fopen("ggParameters.txt", "r");
     if (fpIn == nullptr) {
         cerr << "Error opening input file\n";
         exit(1);

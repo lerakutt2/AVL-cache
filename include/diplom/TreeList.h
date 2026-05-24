@@ -10,7 +10,6 @@
 #include <string>
 #include <stdexcept>
 
-// Будем использовать вариативные шаблоны. Запись  typename... InputTypes значит, что шаблон может принять 0 или более типов в качестве своих аргументов.
 /// <summary>
 /// Класс, содержащий дерево для конкретной функции
 /// </summary>
@@ -19,17 +18,17 @@
 template<typename ReturnType, typename... InputTypes>
 class TreeList {
 public:
-    using PossibleTypes = std::variant<Tree<InputTypes>*...>;
+    // trees typed by function parameters types
+    using PossibleTypes = std::variant<Tree<InputTypes>*...>; 
 
+    /// <summary>
+    /// Item of linked list of trees
+    /// </summary>
     struct Link {
         PossibleTypes tree;
         std::unique_ptr<Link> next;
         Link(PossibleTypes tr) : tree(std::move(tr)) {}
     };
-
-    TreeList(ReturnType(*func)(InputTypes...));
-
-    ~TreeList();
 
     class VariantList {
     public:
@@ -97,6 +96,10 @@ public:
 
         void clear() { head.reset(); }
     };
+
+    TreeList(ReturnType(*func)(InputTypes...));
+
+    ~TreeList();
 
     VariantList treelist;
     using FirstType = std::tuple_element_t<0, std::tuple<InputTypes...>>;

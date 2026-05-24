@@ -30,7 +30,7 @@ void TreeList<ReturnType, InputTypes...>::CreateTrees() {
 template<typename ReturnType, typename... InputTypes>
 template<size_t idx>
 void TreeList<ReturnType, InputTypes...>::CreateTreeList() {
-    treelist.push_back(PossibleTypes{ &std::get<idx>(trees) });
+    treelist.push_back(PossibleTypes{ std::in_place_index<idx>, &std::get<idx>(trees) });
 }
 
 // public GetValue
@@ -68,7 +68,7 @@ ReturnType TreeList<ReturnType, InputTypes...>::GetValue(InputTypes... params) {
 
     void* val;
     if (currNode == nullptr) {
-        std::cout << "CAHCHE MISS\n";
+        std::cout << "CAHCHE MISS, CALLING FUNCTION\n";
         currNode = std::visit([&](auto& tree) -> void* {
             void* tmp = tree->InsertNodeAbstract(currHead);
 

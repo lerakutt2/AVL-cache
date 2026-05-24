@@ -10,11 +10,6 @@ void Tree<T>::SetValue(T val) {
 }
 
 template<typename T>
-void Tree<T>::Link(Tree* tree) {
-    nextTree = tree;
-}
-
-template<typename T>
 T Tree<T>::GetValue(void* absNode) {
     Leaf<T>* currNode = static_cast<Leaf<T>*>(absNode);
     return currNode == nullptr ? 0 : 1;
