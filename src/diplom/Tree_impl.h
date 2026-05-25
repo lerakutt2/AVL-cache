@@ -12,7 +12,7 @@ void Tree<T>::SetValue(T val) {
 template<typename T>
 T Tree<T>::GetValue(void* absNode) {
     Leaf<T>* currNode = static_cast<Leaf<T>*>(absNode);
-    return currNode == nullptr ? 0 : 1;
+    return currNode == nullptr ? T{} : currNode->argument;
 }
 
 template<typename T>
@@ -24,15 +24,15 @@ void Tree<T>::SetValueAbstract(void* absNode, void* value) {
 template<typename T>
 void* Tree<T>::InsertNodeAbstract(void* absHead) {
     //void** parentValuePtr = static_cast<void**>(absHead);
-    Leaf<T>** parentNodePtr = static_cast<Leaf<T>**>(absHead);
-    Leaf<T>* currHead = *parentNodePtr;
+    auto** headPtr = static_cast<void**>(absHead);
+    Leaf<T>* currHead = static_cast<Leaf<T>*>(*headPtr);
 
     //Leaf<T>* currHead = static_cast<Leaf<T>*>(absHead);
-    Leaf<T>* result = nullptr;
-    currHead = InsertNode(currHead, result);
-    *parentNodePtr = currHead;
+    Leaf<T>* newLeaf = nullptr;
+    currHead = InsertNode(currHead, newLeaf);
+    *headPtr = currHead;
 
-    return static_cast<void*>(&result->value);
+    return static_cast<void*>(&newLeaf->value);
 }
 
 template<typename T>
@@ -108,7 +108,7 @@ Leaf<T>* Tree<T>::Find(Leaf<T>* currNode, const T& value)
 template<typename T>
 Leaf<T>* Tree<T>::Balance(Leaf<T>* node) {
 
-    node->height = 1 + Max(Height(node->left), Height(node->right));
+    node->height = 1 + std::max(Height(node->left), Height(node->right));
     int balance = GetBalance(node);
 
     // Левое-левое
@@ -137,9 +137,7 @@ Leaf<T>* Tree<T>::Balance(Leaf<T>* node) {
 // Height
 template<typename T>
 int Tree<T>::Height(Leaf<T>* node) {
-    if (node == nullptr)
-        return 0;
-    return node->height;
+    return node == nullptr ? 0 : node->height;
 }
 
 // RightRotate
@@ -151,8 +149,8 @@ Leaf<T>* Tree<T>::RightRotate(Leaf<T>* y) {
     x->right = y;
     y->left = T2;
 
-    y->height = Max(Height(y->left), Height(y->right)) + 1;
-    x->height = Max(Height(x->left), Height(x->right)) + 1;
+    y->height = std::max(Height(y->left), Height(y->right)) + 1;
+    x->height = std::max(Height(x->left), Height(x->right)) + 1;
 
     return x;
 }
@@ -166,8 +164,8 @@ Leaf<T>* Tree<T>::LeftRotate(Leaf<T>* x) {
     y->left = x;
     x->right = T2;
 
-    x->height = Max(Height(x->left), Height(x->right)) + 1;
-    y->height = Max(Height(y->left), Height(y->right)) + 1;
+    x->height = std::max(Height(x->left), Height(x->right)) + 1;
+    y->height = std::max(Height(y->left), Height(y->right)) + 1;
 
     return y;
 }

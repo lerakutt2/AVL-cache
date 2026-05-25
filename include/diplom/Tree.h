@@ -17,7 +17,6 @@ public:
     ~Tree() = default;
 
     T searchValue;
-
     T GetValue(void* absNode);
 
     // abstract methods

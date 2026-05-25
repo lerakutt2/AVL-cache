@@ -6,23 +6,18 @@
 #include <any>
 
 template<typename ReturnType, typename... InputTypes>
-TreeList<ReturnType, InputTypes...>::TreeList(ReturnType(*func)(InputTypes...)) {
-    func_ = func;
+TreeList<ReturnType, InputTypes...>::TreeList(ReturnType(*func)(InputTypes...))
+    : func_(func)
+{
     CreateTrees();
-}
-
-// Destructor
-template<typename ReturnType, typename... InputTypes>
-TreeList<ReturnType, InputTypes...>::~TreeList() {
-    //CleanTree(head);
 }
 
 template<typename ReturnType, typename... InputTypes>
 void TreeList<ReturnType, InputTypes...>::CreateTrees() {    
     trees = std::make_tuple(Tree<InputTypes>()...);
+
     [&] <size_t... Is>(std::index_sequence<Is...>) {
-        ((Is < paramsCount ?
-            CreateTreeList<Is>() : void()), ...);
+        (CreateTreeList<Is>(), ...);
     }(std::index_sequence_for<InputTypes...>{});
 
 }
@@ -45,28 +40,26 @@ ReturnType TreeList<ReturnType, InputTypes...>::GetValue(InputTypes... params) {
             SetValues<Is>(paramsTuple) : void()), ...);
     }(std::index_sequence_for<InputTypes...>{});
 
-    Link* it = treelist.head.get(); // итератор по списку Link
+    auto* it = treelist.head.get(); // итератор по списку Link
 
     void* currHead = static_cast<void*>(&head->value);
     void* currNode = static_cast<void*>(head->value);
-
-    //it = it->next.get();
     
-    while (true) {
+    while (it) {
         currNode = std::visit([&](auto& tree) -> void* {
             return tree->FindAbstract(currNode); 
             }, it->tree);
 
         if (currNode == nullptr) break; // узел не найден
-        if (!it->next.get()) { // нашли узел и это последнее дерево
-            break;
-        }
+
+        if (!it->next.get()) break; // нашли узел и это последнее дерево
+            
         currHead = currNode;
         currNode = *static_cast<void**>(currNode);
         it = it->next.get(); // Переходим к следующему дереву в списке
     }
 
-    void* val;
+    void* val = nullptr;
     if (currNode == nullptr) {
         std::cout << "CAHCHE MISS, CALLING FUNCTION\n";
         currNode = std::visit([&](auto& tree) -> void* {
@@ -84,8 +77,7 @@ ReturnType TreeList<ReturnType, InputTypes...>::GetValue(InputTypes... params) {
                 }, it->tree);
         }
 
-        ReturnType* tmpRes = new ReturnType;
-        *tmpRes = func_(params...);
+        auto* tmpRes = new ReturnType(std::apply(func_, paramsTuple));
 
         // Записываем указатель на результат физически в поле value последнего узла
         *static_cast<void**>(currNode) = static_cast<void*>(tmpRes);
@@ -110,24 +102,3 @@ template<size_t idx>
 void TreeList<ReturnType, InputTypes...>::SetValues(const std::tuple<InputTypes...>& data) {
     std::get<idx>(trees).SetValue(std::get<idx>(data));
 }
-
-////// CleanTree
-////template<typename ReturnType, typename... InputTypes>
-////void TreeList<ReturnType, InputTypes...>::CleanTree(Leaf<InputType>* leaf) {
-////    if (leaf == nullptr)
-////        return;
-////
-////    Leaf<InputType>* leftChild = leaf->left;
-////    Leaf<InputType>* rightChild = leaf->right;
-////    Leaf<InputType>* nextChild = leaf->next;
-////
-////    CleanTree(leftChild);
-////    CleanTree(rightChild);
-////    CleanTree(nextChild);
-////
-////    if (leaf->value != nullptr) {
-////        delete static_cast<ReturnType*>(leaf->value);
-////    }
-////
-////    delete leaf;
-////}

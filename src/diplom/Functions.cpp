@@ -38,10 +38,6 @@ __float128 GG(int L, __float128 ALPHA, __float128 GAMMA, __float128 P,
     return GLA[L] * GAM;
 }
 
-int Max(const int& a, const int& b) {
-    return (a > b) ? a : b;
-}
-
 double Sum(int a, double c) {
     return a + c;
 }
