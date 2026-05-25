@@ -1,10 +1,6 @@
 #include "diplom/Functions.h"
 #include <quadmath.h>
 
-int TestAdd(int a, int b) {
-	return a + b;
-}
-
 __float128 GG0(__float128 ALPHA, __float128 GAMMA, __float128 P) {
     __float128 DM = P / ALPHA;
     __float128 TT = 1.0Q + GAMMA;

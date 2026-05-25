@@ -4,37 +4,58 @@
 #include <functional>
 #include <tuple>
 
+/// <summary>
+/// Set searchValue
+/// </summary>
 template<typename T>
-void Tree<T>::SetValue(T val) {
+void Tree<T>::SetSearchValue(T val) {
     searchValue = val;
 }
 
+/// <summary>
+/// Get the argument in the Leaf
+/// </summary>
+/// <param name="absNode">Node of type void* that certainly of type T*</param>
+/// <returns>absNode->argument</returns>
 template<typename T>
-T Tree<T>::GetValue(void* absNode) {
+T Tree<T>::GetArgument(void* absNode) {
     Leaf<T>* currNode = static_cast<Leaf<T>*>(absNode);
     return currNode == nullptr ? T{} : currNode->argument;
 }
 
+/// <summary>
+/// Set the next field of the node
+/// </summary>
+/// <param name="absNode">Node of type void* that certainly of type T*</param>
+/// <param name="next">Next tree or value to set to node</param>
 template<typename T>
-void Tree<T>::SetValueAbstract(void* absNode, void* value) {
+void Tree<T>::SetNextAbstract(void* absNode, void* next) {
     Leaf<T>* currNode = static_cast<Leaf<T>*>(absNode);
-    currNode->value = value;
+    currNode->next = next;
 }
 
+/// <summary>
+/// Calls InsertNode with typed parameters
+/// </summary>
+/// <param name="absHead">Node of type void* that certainly of type T*</param>
+/// <returns>Head of a tree next to created leaf or a function value</returns>
 template<typename T>
 void* Tree<T>::InsertNodeAbstract(void* absHead) {
-    //void** parentValuePtr = static_cast<void**>(absHead);
     auto** headPtr = static_cast<void**>(absHead);
     Leaf<T>* currHead = static_cast<Leaf<T>*>(*headPtr);
 
-    //Leaf<T>* currHead = static_cast<Leaf<T>*>(absHead);
     Leaf<T>* newLeaf = nullptr;
     currHead = InsertNode(currHead, newLeaf);
     *headPtr = currHead;
 
-    return static_cast<void*>(&newLeaf->value);
+    return static_cast<void*>(&newLeaf->next);
 }
 
+/// <summary>
+/// Calls NewNode with typed parameters
+/// </summary>
+/// <param name="absNode"></param>
+/// <returns>Head of a tree next to created leaf or a function value</returns>
 template<typename T>
 void* Tree<T>::NewNodeAbstract(void* absNode) {
     Leaf<T>** parentValuePtr = static_cast<Leaf<T>**>(absNode);
@@ -44,10 +65,16 @@ void* Tree<T>::NewNodeAbstract(void* absNode) {
 
     NewNode(newNode, result);
     *parentValuePtr = newNode;
-    return static_cast<void*>(&result->value);
+    return static_cast<void*>(&result->next);
 }
 
-// NewNode <T> 
+/// <summary>
+/// Creates and returns new node with argument=searchValue
+/// </summary>
+/// <typeparam name="T"></typeparam>
+/// <param name="node">Empty node to fill</param>
+/// <param name="lastLeaf">Empty node to fill</param>
+/// <returns>New node</returns>
 template<typename T>
 Leaf<T>* Tree<T>::NewNode(Leaf<T>*& node, Leaf<T>*& lastLeaf) {
     node = new Leaf<T>(searchValue);
@@ -55,7 +82,13 @@ Leaf<T>* Tree<T>::NewNode(Leaf<T>*& node, Leaf<T>*& lastLeaf) {
     return node;
 }
 
-// InsertNode <T>
+/// <summary>
+/// Finds a place for a new node, starting with head
+/// </summary>
+/// <typeparam name="T"></typeparam>
+/// <param name="node">Empty node to fill</param>
+/// <param name="lastLeaf">Empty node to fill</param>
+/// <returns>New Node</returns>
 template<typename T>
 Leaf<T>* Tree<T>::InsertNode(Leaf<T>*& node, Leaf<T>*& lastLeaf) {
     if (node == nullptr) {
@@ -71,6 +104,11 @@ Leaf<T>* Tree<T>::InsertNode(Leaf<T>*& node, Leaf<T>*& lastLeaf) {
     return Balance(node);
 }
 
+/// <summary>
+/// Calls Find() with typed node 
+/// </summary>
+/// <param name="abstractNode">Node of type void* that certainly has type T</param>
+/// <returns>Pointer to next level head</returns>
 template<typename T>
 void* Tree<T>::FindAbstract(void* abstractNode) {
     Leaf<T>* specificNode = static_cast<Leaf<T>*>(abstractNode);
@@ -78,10 +116,16 @@ void* Tree<T>::FindAbstract(void* abstractNode) {
 
     if (found == nullptr) return nullptr;
 
-    return static_cast<void*>(&found->value);
+    return static_cast<void*>(&found->next);
 }
 
-// Find <T> 
+/// <summary>
+/// Searches node with given value on a tree and returns it
+/// </summary>
+/// <typeparam name="T"></typeparam>
+/// <param name="currNode"></param>
+/// <param name="value"></param>
+/// <returns></returns>
 template<typename T>
 Leaf<T>* Tree<T>::Find(Leaf<T>* currNode, const T& value)
 {
@@ -97,35 +141,32 @@ Leaf<T>* Tree<T>::Find(Leaf<T>* currNode, const T& value)
                 currNode = currNode->left;
             else
                 currNode = currNode->right;
-        }                // cycle across all leaves
-
+        }
         return currNode;
     }
 }
 
-
-// Balance
 template<typename T>
 Leaf<T>* Tree<T>::Balance(Leaf<T>* node) {
 
     node->height = 1 + std::max(Height(node->left), Height(node->right));
     int balance = GetBalance(node);
 
-    // Левое-левое
+    // Left-left
     if (balance > 1 && searchValue < node->left->argument)
         return RightRotate(node);
 
-    // Правое-правое
+    // Right-right
     if (balance < -1 && searchValue > node->right->argument)
         return LeftRotate(node);
 
-    // Левое-правое
+    // Left-right
     if (balance > 1 && searchValue > node->left->argument) {
         node->left = LeftRotate(node->left);
         return RightRotate(node);
     }
 
-    // Правое-левое
+    // Right-left
     if (balance < -1 && searchValue < node->right->argument) {
         node->right = RightRotate(node->right);
         return LeftRotate(node);

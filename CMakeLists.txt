@@ -38,6 +38,7 @@ if(NOT QUADMATH_INCLUDE_DIR OR NOT QUADMATH_LIBRARY)
                 /usr/include
                 /usr/local/include
                 /usr/lib/gcc/x86_64-linux-gnu/*/include
+                /usr/lib/gcc/x86_64-redhat-linux/*/include/
         )
         
         find_library(QUADMATH_LIBRARY
@@ -47,6 +48,7 @@ if(NOT QUADMATH_INCLUDE_DIR OR NOT QUADMATH_LIBRARY)
                 /usr/lib/x86_64-linux-gnu
                 /usr/local/lib
                 /usr/lib/gcc/x86_64-linux-gnu/*/
+                /usr/lib/gcc/x86_64-redhat-linux/*/
         )
     endif()
 endif()

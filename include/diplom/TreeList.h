@@ -13,10 +13,10 @@ template<typename T> class Tree;
 template<typename T> class Leaf;
 
 /// <summary>
-/// Класс, содержащий дерево для конкретной функции
+/// Manager of Linked List of Trees (LLT)
 /// </summary>
-/// <typeparam name="ReturnType">Тип выходного параметра</typeparam>
-/// <typeparam name="...InputTypes">Типы входных параметров (по порядку)</typeparam>
+/// <typeparam name="ReturnType">Type of function return value</typeparam>
+/// <typeparam name="...InputTypes">Types of function input parameters</typeparam> 
 template<typename ReturnType, typename... InputTypes>
 class TreeList {
 public:
@@ -24,7 +24,7 @@ public:
     using PossibleTypes = std::variant<Tree<InputTypes>*...>; 
 
     /// <summary>
-    /// Item of linked list of trees
+    /// Item of LLT
     /// </summary>
     struct Link {
         PossibleTypes tree;
@@ -32,9 +32,13 @@ public:
         Link(PossibleTypes tr) : tree(std::move(tr)) {}
     };
 
+    /// <summary>
+    /// Linked List of Trees (LLT)
+    /// </summary>
     class VariantList {
     public:
         VariantList() = default;
+        ~VariantList() = default;
 
         VariantList(const VariantList&) = delete;
         VariantList& operator=(const VariantList&) = delete;
@@ -45,8 +49,10 @@ public:
         Link* current = nullptr;        
         Link* tail = nullptr; // O(1) push_back
 
-
-        // Добавление в начало
+        /// <summary>
+        /// Add element to the beginning of the list
+        /// </summary>
+        /// <param name="value">element to add</param>
         template<typename T>
         void push_front(T value) {
             static_assert(std::is_constructible_v<PossibleTypes, T>,
@@ -59,7 +65,10 @@ public:
             head = std::move(node);
         }
 
-        // Добавление в конец
+        /// <summary>
+        /// Add element to the back of the list
+        /// </summary>
+        /// <param name="value">element to add</param>
         template<typename T>
         void push_back(T&& value) {
             static_assert(std::is_constructible_v<PossibleTypes, T>,
@@ -76,7 +85,7 @@ public:
             tail = raw_node;
         }
 
-        // Удаление первого элемента
+        /// Delete and get first element
         void pop_front() {
             if (!head) return;
             if (head.get() == tail) {
@@ -85,7 +94,9 @@ public:
             head = std::move(head->next);
         }
 
-        // Доступ к элементу по индексу
+        /// <summary>
+        /// Get element at index
+        /// </summary>
         PossibleTypes& at(size_t index) {
             auto* curr = head.get();
             for (size_t i = 0; i < index && curr; ++i) {
@@ -95,13 +106,16 @@ public:
             return curr->tree;
         }
 
+        /// Move from current item to next
         void move_next() {
             if (current) current = current->next.get();
         }
 
+        /// <summary>
+        /// Print all element of list
+        /// </summary>
         void print_all() const {
             for (auto* curr = head.get(); curr; curr = curr->next.get()) {
-                // Печать через std::visit, так как внутри variant
                 std::visit([](auto* tree) {
                     if (tree) std::cout << "Tree[" << typeid(*tree).name() << "]";
                     else std::cout << "null";
@@ -130,15 +144,28 @@ public:
     TreeList(TreeList&&) noexcept = default;
     TreeList& operator=(TreeList&&) noexcept = default;
 
+    /// <summary>
+    /// LLT for the particular function the class is created for
+    /// </summary>
     VariantList treelist;
 
     using FirstType = std::tuple_element_t<0, std::tuple<InputTypes...>>;
     static constexpr int paramsCount = sizeof...(InputTypes);
 
+    /// <summary>
+    /// Pointer to a function
+    /// </summary>
     std::function<ReturnType(InputTypes...)> func_;   
+
+    /// <summary>
+    /// Root leaf of the first tree in LLT
+    /// </summary>
     std::unique_ptr<Leaf<FirstType>> head = std::make_unique<Leaf<FirstType>>();
 
+    // tuple of trees
     std::tuple<Tree<InputTypes>...> trees;
+
+    // tuple of parameters (updates each time parameters are passed in GetValue)
     std::tuple<InputTypes...> paramsTuple;
 
     void CreateTrees();
@@ -149,12 +176,11 @@ public:
     
     template<size_t idx>
     void SetValues(const std::tuple<InputTypes...>& data);
-     
 };
 
 // deduction guide
 template<typename ReturnType, typename... InputTypes>
 TreeList(ReturnType(*)(InputTypes...)) -> TreeList<ReturnType, InputTypes...>;
 
-// Подключаем реализацию шаблонных методов
+// Implementation
 #include "../../src/diplom/TreeList_impl.h"

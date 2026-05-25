@@ -3,8 +3,8 @@
 #else
 #include <sys/time.h> // gettimeofday
 #endif
-#include "diplom/TreeList.h"        // шаблонный класс дерева
-#include "diplom/Functions.h"   // прототипы функций
+#include "diplom/TreeList.h"
+#include "diplom/Functions.h" // functions for testing
 #include "diplom/Utils.h"
 
 #include <ctime>    // time
@@ -36,7 +36,7 @@ void Calculate(int numberOfLines) {
     for (int idx = 0; idx < numberOfLines; ++idx) {
         result = GG(L[idx], ALPHA[idx], GAMMA[idx], P[idx], GAM[idx]);
         quadmath_snprintf(buf, sizeof buf, "%*.34Qf", 10, result);
-        cout << "Значение функции: " << buf << endl;
+        //cout << "Значение функции: " << buf << endl;
     }
 
     // end of code to measure
@@ -57,28 +57,17 @@ void CalculateWithTree(int numberOfLines) {
     TreeList GGtree(GG); 
 
     startTime = clock();
-    for (int idx = 0; idx < numberOfLines; ++idx) {
-        __float128* data = new __float128[5]{
-            static_cast<__float128>(L[idx]),
-            ALPHA[idx],
-            GAMMA[idx],
-            P[idx],
-            GAM[idx]
-        };
-        //GGTree.GetValue(data, result);
-        
-        cout << "Параметры функции:" << L[idx] << " ";
-        printFloat128(4, ALPHA[idx], GAMMA[idx], P[idx], GAM[idx]);
+    for (int idx = 0; idx < numberOfLines; ++idx) {      
+        //cout << "Параметры функции:" << L[idx] << " ";
+        //printFloat128(4, ALPHA[idx], GAMMA[idx], P[idx], GAM[idx]);
 
         //cout << "correct ";
         //printFloat128(ggResult[idx]);
 
         result = GGtree.GetValue(L[idx], ALPHA[idx], GAMMA[idx], P[idx], GAM[idx]);
-        cout << "tree: ";
-        printFloat128(1, result);
-        cout<< endl;
-        //cout << compareFloat128(ggResult[idx], result);
-        delete[] data;
+        //cout << "tree: ";
+        //printFloat128(1, result);
+        //cout << endl;
     }
 
     // end of code to measure
@@ -88,15 +77,14 @@ void CalculateWithTree(int numberOfLines) {
     cout << setprecision(14) << "Wallclock time   (s) = " << ((static_cast<double>(timeEnd.tv_sec - timeStart.tv_sec + (timeEnd.tv_usec - timeStart.tv_usec) * 0.000001))) << endl;
 }
 
-void CalculateSum() {
+void TestOnSum() {
     // Создаем 10 пар целочисленных значений
     std::vector<std::pair<int, double>> pairs = {
-        {1, 2}, {1, 2}, {5, 6}, {7, 8}, {9, 10},
+        {1, 2}, {1, 2}, {5, 6}, {5, 8}, {9, 10},
         {11, 12}, {13, 14}, {15, 16}, {5, 6}, {19, 20}
     };
 
-    TreeList tree(Sum); // например второй аргумент это количество входных.
-    //TreeList<int, int, int> tree(Sum);
+    TreeList tree(Sum);
     // Вызываем функцию для каждой пары
     for (size_t i = 0; i < pairs.size(); ++i) { 
         double result = tree.GetValue(pairs[i].first, pairs[i].second);
@@ -105,11 +93,10 @@ void CalculateSum() {
     }
 }
 
-
-int main(void) {
-    int numberOfLines[] = { 10};
+void TestOnGG() {
+    int numberOfLines[] = { 100000 };
     for (int i = 0; i < size(numberOfLines); i++) {
-        cout << "Количество строк: " << numberOfLines[i] << endl;
+        cout << "Number of lines: " << numberOfLines[i] << endl;
         P.clear();
         GAMMA.clear();
         ALPHA.clear();
@@ -118,12 +105,17 @@ int main(void) {
         ggResult.clear();
         LoadData(numberOfLines[i], P, GAMMA, ALPHA, GAM, L, ggResult);
 
-        cout << "Function call:" << endl;
+        cout << "======================================================= Function call ============================================================" << endl;
         Calculate(numberOfLines[i]);
-        cout << "Using Tree" << endl;
+        cout << "======================================================= Using Tree ===============================================================" << endl;
         CalculateWithTree(numberOfLines[i]);
     }
-    //CalculateSum();
-    //TreeList tree(Sum);
+}
+
+int main(void) {
+    //TestOnSum();
+    
+    // uncomment this call to test on function GG 
+    TestOnGG();
     return 0;
 }
