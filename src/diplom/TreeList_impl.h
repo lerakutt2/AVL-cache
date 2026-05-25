@@ -3,217 +3,111 @@
 #include <iostream>
 #include <functional>
 #include <tuple>
+#include <any>
 
-// Constructor
+/// <param name="func">Function tree is created for</param>
 template<typename ReturnType, typename... InputTypes>
-TreeList<ReturnType, InputTypes...>::TreeList() {
-    head.left = nullptr;
-    head.right = nullptr;
-    head.next = nullptr;
-    head.value = nullptr;
-    head.height = 1;
+TreeList<ReturnType, InputTypes...>::TreeList(ReturnType(*func)(InputTypes...))
+	: func_(func) {
+	CreateTrees();
 }
 
-// Destructor
 template<typename ReturnType, typename... InputTypes>
-TreeList<ReturnType, InputTypes...>::~TreeList() {
-    if (head.left) CleanTreeList(head.left);
-    if (head.right) CleanTreeList(head.right);
-    if (head.next) CleanTreeList(head.next);
+void TreeList<ReturnType, InputTypes...>::CreateTrees() {
+	trees = std::make_tuple(Tree<InputTypes>()...);
+
+	[&] <size_t... Is>(std::index_sequence<Is...>) {
+		(CreateTreeList<Is>(), ...);
+	}(std::index_sequence_for<InputTypes...>{});
+
 }
 
-// public GetValue
+/// <summary>
+/// Fills VariantList (LLT)
+/// </summary>
 template<typename ReturnType, typename... InputTypes>
-void TreeList<ReturnType, InputTypes...>::GetValue(InputType* data, ReturnType& retData) {
-    Leaf<InputType>* lastHead = nullptr;
-    void* result = GetValue(5, &head, data, &lastHead);
-    retData = *static_cast<ReturnType*>(result);
+template<size_t idx>
+void TreeList<ReturnType, InputTypes...>::CreateTreeList() {
+	treelist.push_back(PossibleTypes{ std::in_place_index<idx>, &std::get<idx>(trees) });
 }
 
-// private GetValue
 template<typename ReturnType, typename... InputTypes>
-ReturnType TreeList<ReturnType, InputTypes...>::GetValue(InputTypes... data) {
-    int actLevel = sizeof...(data);
-    auto params = std::make_tuple(data);
-    //InputType actPar;
-    bool nodeFound; // I have found node with given properties (parameter value)
-    for (; actLevel >= 0; --actLevel) { // cycle traversing all parameters (all Trees)
-        actPar = params.get(actLevel);
-        tree.GetValue(actPar);
-        // если не находится, то вернет уровень и ссылку на недостающий узел? 
-        // может тогда здесь будет метод который создаст новые деревья выше уровнем?
-        // вернет ссылку на след. дерево или значение
-        // может быть этот метод будет возвращать ссылку на узел и если этот узел пустой то здесь будет вызываться метод создания?
-        
-        // будет в дереве:
-        // while (1) {               // cycle across all leaves on a given TreeList
-        //    if (actNode == nullptr) // I have not found given node, need to add
-        //        break;
-        //    if (actPar == actNode->argument) {
-        //        nodeFound = true;
-
-        //        //char buf[128];
-        //        //quadmath_snprintf(buf, sizeof(buf), "%.30Qf", actPar);
-        //        //cout << "node found! data[" << actLevel << "]=" << buf << endl;
-        //        break;
-        //    }
-        //    else if (actPar < actNode->argument)
-        //        actNode = actNode->left;
-        //    else
-        //        actNode = actNode->right;
-        //}                // cycle across all leaves
-        //if (nodeFound) { // I have found requested node, either return result or go
-        //    // one level further
-        //    if (actLevel == 0)
-        //        return actNode->value;
-        //    else if (actLevel == 1) { // special case, storing pointer to 0-th level
-        //        // head for reuse
-        //        (*lastLevelHead) = actNode;
-        //        actHead = actNode;
-        //    }
-        //    else
-        //        actHead = actNode;
-        //}
-        //else { // I have not found requested node, add it and return result
-
-        //    Leaf<InputType>* result;
-        //    actHead->next = InsertNode(actHead->next, data, actLevel, result,
-        //        lastLevelHead);
-        //    return result->value;
-        //}
-    }
-    // cycle across all parameters
-    throw std::runtime_error("TreeList::GetValue: unexpected state");
+template<size_t idx>
+void TreeList<ReturnType, InputTypes...>::SetValues(const std::tuple<InputTypes...>& data) {
+	std::get<idx>(trees).SetSearchValue(std::get<idx>(data));
 }
 
-// CleanTreeList
-template<typename InputType, typename ReturnType>
-void TreeList<InputType, ReturnType>::CleanTreeList(Leaf<InputType>* leaf) {
-    if (leaf == nullptr)
-        return;
+template<typename ReturnType, typename... InputTypes>
+ReturnType TreeList<ReturnType, InputTypes...>::GetValue(InputTypes... params) {
 
-    Leaf<InputType>* leftChild = leaf->left;
-    Leaf<InputType>* rightChild = leaf->right;
-    Leaf<InputType>* nextChild = leaf->next;
+	paramsTuple = std::make_tuple(params...);
 
-    CleanTreeList(leftChild);
-    CleanTreeList(rightChild);
-    CleanTreeList(nextChild);
+	// updating searchValue in trees according to passed parameters
+	[&] <size_t... Is>(std::index_sequence<Is...>) {
+		((Is < paramsCount ?
+			SetValues<Is>(paramsTuple) : void()), ...);
+	}(std::index_sequence_for<InputTypes...>{});
 
-    if (leaf->value != nullptr) {
-        delete static_cast<ReturnType*>(leaf->value);
-    }
+	auto* it = treelist.head.get(); // iterator
 
-    delete leaf;
-}
+	void* currHead = static_cast<void*>(&head->next); // remembering the head of the first tree
+	void* currNode = static_cast<void*>(head->next); // leaf to search from
 
-// NewNode
-template<typename InputType, typename ReturnType>
-Leaf<InputType>* TreeList<InputType, ReturnType>::NewNode(InputType* data, const int& actLevel,
-    Leaf<InputType>*& value,
-    Leaf<InputType>** lastLevelHead) {
-    Leaf<InputType>* node = new Leaf<InputType>(data[actLevel]);
-    Leaf<InputType>* lastNode = node;
+	// searching in every tree
+	while (it) {
+		// searching in tree on some level, FindAbstract returns a pointer to the leaf on a NEXT level (head of next tree)
+		currNode = std::visit([&](auto& tree) -> void* {
+			return tree->FindAbstract(currNode);
+			}, it->tree);
 
-    if (actLevel == 1)
-        (*lastLevelHead) = node;
+		if (currNode == nullptr) break; // node is not found on one of the trees, need to create
 
-    for (int idx = actLevel - 1; idx >= 0; --idx) {
-        lastNode->next = new Leaf<InputType>(data[idx]);
-        lastNode = lastNode->next;
-        if (idx == 1)
-            (*lastLevelHead) = lastNode;
-    }
+		if (!it->next.get()) break; // node is found and this is the last tree (the next tree doesn't exist)
 
-    std::cout << "New node, calling GG" << std::endl;
-    // now only for GG
-    ReturnType* tmpVal = new ReturnType;
-    int L_value = static_cast<int>(data[0]);
-    *tmpVal = GG(L_value, data[1], data[2], data[3], data[4]);
-    lastNode->value = static_cast<void*>(tmpVal);
-    value = lastNode;
+		// found node functions as a head of the tree on a next level
+		currHead = currNode;
+		currNode = *static_cast<void**>(currNode);
+		it = it->next.get(); // moving to the next tree
+	}
 
-    return node;
-}
+	void* val = nullptr;
+	if (currNode == nullptr)
+	{ // node is not found.
+	  // the iterator is still on a tree that misses the element. 
+	  // so we need to create leaf on this tree and next trees and connect them.
+		//std::cout << "CAHCHE MISS, CALLING FUNCTION\n";
+		currNode = std::visit([&](auto& tree) -> void* {
+			void* tmp = tree->InsertNodeAbstract(currHead);
+			void* updatedNode = *static_cast<void**>(currHead);
+			return tmp;
+			}, it->tree); // found a place for a new node, created it, returned node->next (head of a next tree that is yet nullptr)
 
-// InsertNode
-template<typename InputType, typename ReturnType>
-Leaf<InputType>* TreeList<InputType, ReturnType>::InsertNode(Leaf<InputType>* node, InputType* data,
-    const int& actLevel, Leaf<InputType>*& value,
-    Leaf<InputType>** lastLevelHead) {
-    if (node == nullptr)
-        return NewNode(data, actLevel, value, lastLevelHead);
+		while (it->next.get()) {
+			it = it->next.get(); // moving to the next tree
 
-    if (data[actLevel] > node->argument)
-        node->right = InsertNode(node->right, data, actLevel, value, lastLevelHead);
-    else
-        node->left = InsertNode(node->left, data, actLevel, value, lastLevelHead);
+			currNode = std::visit([&](auto& tree) -> void* {
+				return tree->NewNodeAbstract(currNode);
+				}, it->tree);
+		}
 
-    node->height = 1 + Max(Height(node->left), Height(node->right));
+		// calling a function 
+		auto* tmpRes = new ReturnType(std::apply(func_, paramsTuple));
 
-    int balance = GetBalance(node);
+		// writing a result of function to the next parameter of last leaf 
+		*static_cast<void**>(currNode) = static_cast<void*>(tmpRes);
 
-    if (balance > 1 && data[actLevel] < node->left->argument)
-        return RightRotate(node);
+		val = tmpRes;
+	}
+	else if (!it->next.get()) { // node found and this is the last tree
+		//std::cout << "FOUND\n";
+		// returning currNode 
+		val = *static_cast<void**>(currNode);
+	}
 
-    if (balance < -1 && data[actLevel] > node->right->argument)
-        return LeftRotate(node);
+	if (val == nullptr) {
+		throw std::runtime_error("Critial: val is nullptr");
+	}
 
-    if (balance > 1 && data[actLevel] > node->left->argument) {
-        node->left = LeftRotate(node->left);
-        return RightRotate(node);
-    }
-
-    if (balance < -1 && data[actLevel] < node->right->argument) {
-        node->right = RightRotate(node->right);
-        return LeftRotate(node);
-    }
-
-    return node;
-}
-
-// Height
-template<typename InputType, typename ReturnType>
-int TreeList<InputType, ReturnType>::Height(Leaf<InputType>* node) {
-    if (node == nullptr)
-        return 0;
-    return node->height;
-}
-
-// RightRotate
-template<typename InputType, typename ReturnType>
-Leaf<InputType>* TreeList<InputType, ReturnType>::RightRotate(Leaf<InputType>* y) {
-    Leaf<InputType>* x = y->left;
-    Leaf<InputType>* T2 = x->right;
-
-    x->right = y;
-    y->left = T2;
-
-    y->height = Max(Height(y->left), Height(y->right)) + 1;
-    x->height = Max(Height(x->left), Height(x->right)) + 1;
-
-    return x;
-}
-
-// LeftRotate
-template<typename InputType, typename ReturnType>
-Leaf<InputType>* TreeList<InputType, ReturnType>::LeftRotate(Leaf<InputType>* x) {
-    Leaf<InputType>* y = x->right;
-    Leaf<InputType>* T2 = y->left;
-
-    y->left = x;
-    x->right = T2;
-
-    x->height = Max(Height(x->left), Height(x->right)) + 1;
-    y->height = Max(Height(y->left), Height(y->right)) + 1;
-
-    return y;
-}
-
-// GetBalance
-template<typename InputType, typename ReturnType>
-int TreeList<InputType, ReturnType>::GetBalance(Leaf<InputType>* N) {
-    if (N == nullptr)
-        return 0;
-    return Height(N->left) - Height(N->right);
+	ReturnType* typedVal = static_cast<ReturnType*>(val);
+	return *typedVal;
 }

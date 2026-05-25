@@ -1,61 +1,186 @@
 #pragma once
-#include <list>
+#include <vector>
+#include <variant>
+#include "Functions.h"
+#include "Leaf.h"
+#include "Tree.h"
+#include <any>
+#include <memory>
+#include <string>
+#include <stdexcept>
 
-// Структура узла дерева
-template<typename T>
-struct Leaf {
-    Leaf* left = nullptr;
-    Leaf* right = nullptr;
-    Leaf* next = nullptr;
-    int height = 1;
-    T argument{};
-    void* value = nullptr;
+template<typename T> class Tree;
+template<typename T> class Leaf;
 
-    Leaf() = default;
-    explicit Leaf(const T& arg) : argument(arg) {}
-};
-
-// Будем использовать вариативные шаблоны. Запись  typename... InputTypes значит, что шаблон может принять 0 или более типов в качестве своих аргументов.
 /// <summary>
-/// Класс, содержащий дерево для конкретной функции (пока GG)
+/// Manager of Linked List of Trees (LLT)
 /// </summary>
-/// <typeparam name="...InputTypes">Типы входных параметров (по порядку)</typeparam>
-/// <typeparam name="ReturnType">Тип выходного параметра</typeparam>
+/// <typeparam name="ReturnType">Type of function return value</typeparam>
+/// <typeparam name="...InputTypes">Types of function input parameters</typeparam> 
 template<typename ReturnType, typename... InputTypes>
 class TreeList {
 public:
-    explicit TreeList(std::function<ReturnType(InputTypes...)> func);
-    TreeList();
-    ~TreeList();
+    // trees typed by function parameters types
+    using PossibleTypes = std::variant<Tree<InputTypes>*...>; 
 
-    void GetValue(InputType* data, ReturnType& retData);
+    /// <summary>
+    /// Item of LLT
+    /// </summary>
+    struct Link {
+        PossibleTypes tree;
+        std::unique_ptr<Link> next;
+        Link(PossibleTypes tr) : tree(std::move(tr)) {}
+    };
 
-private:
-    std::list<Tree> ListOfTrees;
-    std::function<ReturnType(InputTypes...)> func;
+    /// <summary>
+    /// Linked List of Trees (LLT)
+    /// </summary>
+    class VariantList {
+    public:
+        VariantList() = default;
+        ~VariantList() = default;
 
-    Leaf<int> head; // вместо int - std::tuple<InputTypes...>[0] - тип первого аргумента
-    void* GetValue(int actLevel, Leaf<InputType>* head,
-        InputType* data, Leaf<InputType>** lastLevelHead);
+        VariantList(const VariantList&) = delete;
+        VariantList& operator=(const VariantList&) = delete;
+        VariantList(VariantList&&) noexcept = default;
+        VariantList& operator=(VariantList&&) noexcept = default;
 
-    void CleanTree(Leaf<InputType>* leaf);
-    // класс дерева и класс содержащий все деревья? да!!!!!!!
-    Leaf<InputType>* NewNode(InputType* data, const int& actLevel,
-        Leaf<InputType>*& value,
-        Leaf<InputType>** lastLevelHead);
+        std::unique_ptr<Link> head = nullptr;
+        Link* current = nullptr;        
+        Link* tail = nullptr; // O(1) push_back
 
-    Leaf<InputType>* InsertNode(Leaf<InputType>* node, InputType* data,
-        const int& actLevel, Leaf<InputType>*& value,
-        Leaf<InputType>** lastLevelHead);
+        /// <summary>
+        /// Add element to the beginning of the list
+        /// </summary>
+        /// <param name="value">element to add</param>
+        template<typename T>
+        void push_front(T value) {
+            static_assert(std::is_constructible_v<PossibleTypes, T>,
+                "Type not supported in this list");
+            auto node = std::make_unique<Link>(std::forward(value));
+            if (!head) {
+                tail = node.get();
+            }
+            node->next = std::move(head);
+            head = std::move(node);
+        }
 
-    int Height(Leaf<InputType>* node);
+        /// <summary>
+        /// Add element to the back of the list
+        /// </summary>
+        /// <param name="value">element to add</param>
+        template<typename T>
+        void push_back(T&& value) {
+            static_assert(std::is_constructible_v<PossibleTypes, T>,
+                "Type not supported in this list");
 
-    Leaf<InputType>* RightRotate(Leaf<InputType>* y);
+            auto node = std::make_unique<Link>(std::forward<T>(value));
+            auto* raw_node = node.get();
+            if (!head) {
+                head = std::move(node);
+            }
+            else {
+                tail->next = std::move(node);
+            }
+            tail = raw_node;
+        }
 
-    Leaf<InputType>* LeftRotate(Leaf<InputType>* x);
+        /// Delete and get first element
+        void pop_front() {
+            if (!head) return;
+            if (head.get() == tail) {
+                tail = nullptr;
+            }
+            head = std::move(head->next);
+        }
 
-    int GetBalance(Leaf<InputType>* N);
+        /// <summary>
+        /// Get element at index
+        /// </summary>
+        PossibleTypes& at(size_t index) {
+            auto* curr = head.get();
+            for (size_t i = 0; i < index && curr; ++i) {
+                curr = curr->next.get();
+            }
+            if (!curr) throw std::out_of_range("Index out of range");
+            return curr->tree;
+        }
+
+        /// Move from current item to next
+        void move_next() {
+            if (current) current = current->next.get();
+        }
+
+        /// <summary>
+        /// Print all element of list
+        /// </summary>
+        void print_all() const {
+            for (auto* curr = head.get(); curr; curr = curr->next.get()) {
+                std::visit([](auto* tree) {
+                    if (tree) std::cout << "Tree[" << typeid(*tree).name() << "]";
+                    else std::cout << "null";
+                    }, curr->tree);
+
+                if (curr->next) std::cout << " -> ";
+            }
+            std::cout << " -> null\n";
+        }
+
+        bool empty() const noexcept { return head == nullptr; }
+
+        void clear() noexcept
+        { 
+            head.reset();
+            tail = nullptr;
+            current = nullptr;
+        }
+    };
+
+    explicit TreeList(ReturnType(*func)(InputTypes...));
+    ~TreeList() = default;
+
+    TreeList(const TreeList&) = delete;
+    TreeList& operator=(const TreeList&) = delete;
+    TreeList(TreeList&&) noexcept = default;
+    TreeList& operator=(TreeList&&) noexcept = default;
+
+    /// <summary>
+    /// LLT for the particular function the class is created for
+    /// </summary>
+    VariantList treelist;
+
+    using FirstType = std::tuple_element_t<0, std::tuple<InputTypes...>>;
+    static constexpr int paramsCount = sizeof...(InputTypes);
+
+    /// <summary>
+    /// Pointer to a function
+    /// </summary>
+    std::function<ReturnType(InputTypes...)> func_;   
+
+    /// <summary>
+    /// Root leaf of the first tree in LLT
+    /// </summary>
+    std::unique_ptr<Leaf<FirstType>> head = std::make_unique<Leaf<FirstType>>();
+
+    // tuple of trees
+    std::tuple<Tree<InputTypes>...> trees;
+
+    // tuple of parameters (updates each time parameters are passed in GetValue)
+    std::tuple<InputTypes...> paramsTuple;
+
+    void CreateTrees();
+    ReturnType GetValue(InputTypes... data);
+
+    template<size_t idx>
+    void CreateTreeList();
+    
+    template<size_t idx>
+    void SetValues(const std::tuple<InputTypes...>& data);
 };
 
-// Подключаем реализацию шаблонных методов
+// deduction guide
+template<typename ReturnType, typename... InputTypes>
+TreeList(ReturnType(*)(InputTypes...)) -> TreeList<ReturnType, InputTypes...>;
+
+// Implementation
 #include "../../src/diplom/TreeList_impl.h"

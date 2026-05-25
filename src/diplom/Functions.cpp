@@ -1,19 +1,15 @@
 #include "diplom/Functions.h"
 #include <quadmath.h>
 
-int TestAdd(int a, int b) {
-	return a + b;
-}
-
-__float128 GG0(__float128& ALPHA, __float128& GAMMA, __float128& P) {
+__float128 GG0(__float128 ALPHA, __float128 GAMMA, __float128 P) {
     __float128 DM = P / ALPHA;
     __float128 TT = 1.0Q + GAMMA;
     __float128 TT2 = 0.5Q * TT;
     return sinq(TT * atanq(DM)) / powq((1 + DM * DM), TT2);
 }
 
-__float128 GG(int& L, __float128& ALPHA, __float128& GAMMA, __float128& P,
-    __float128& GAM) {
+__float128 GG(int L, __float128 ALPHA, __float128 GAMMA, __float128 P,
+    __float128 GAM) {
     if (P == 0.0Q)
         return 0.0Q;
 
@@ -38,10 +34,6 @@ __float128 GG(int& L, __float128& ALPHA, __float128& GAMMA, __float128& P,
     return GLA[L] * GAM;
 }
 
-int Max(const int& a, const int& b) {
-    return (a > b) ? a : b;
-}
-
-int Sum(int a, int b) {
-    return a + b;
+double Sum(int a, double c) {
+    return a + c;
 }

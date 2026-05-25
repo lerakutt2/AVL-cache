@@ -4,166 +4,170 @@
 #include <functional>
 #include <tuple>
 
-// Constructor
-template<typename InputType, typename ReturnType>
-Tree<InputType, ReturnType>::Tree() {
-    head.left = nullptr;
-    head.right = nullptr;
-    head.next = nullptr;
-    head.value = nullptr;
-    head.height = 1;
+/// <summary>
+/// Set searchValue
+/// </summary>
+template<typename T>
+void Tree<T>::SetSearchValue(T val) {
+    searchValue = val;
 }
 
-// Destructor
-template<typename InputType, typename ReturnType>
-Tree<InputType, ReturnType>::~Tree() {
-    if (head.left) CleanTree(head.left);
-    if (head.right) CleanTree(head.right);
-    if (head.next) CleanTree(head.next);
+/// <summary>
+/// Get the argument in the Leaf
+/// </summary>
+/// <param name="absNode">Node of type void* that certainly of type T*</param>
+/// <returns>absNode->argument</returns>
+template<typename T>
+T Tree<T>::GetArgument(void* absNode) {
+    Leaf<T>* currNode = static_cast<Leaf<T>*>(absNode);
+    return currNode == nullptr ? T{} : currNode->argument;
 }
 
-// public GetValue
-template<typename InputType, typename ReturnType>
-void Tree<InputType, ReturnType>::GetValue(InputType* data, ReturnType& result) {
-    void* res = GetValue(5, &head, data);
-    result = *static_cast<ReturnType*>(res);
+/// <summary>
+/// Set the next field of the node
+/// </summary>
+/// <param name="absNode">Node of type void* that certainly of type T*</param>
+/// <param name="next">Next tree or value to set to node</param>
+template<typename T>
+void Tree<T>::SetNextAbstract(void* absNode, void* next) {
+    Leaf<T>* currNode = static_cast<Leaf<T>*>(absNode);
+    currNode->next = next;
 }
 
-// private GetValue
-template<typename InputType, typename ReturnType>
-void* Tree<InputType, ReturnType>::GetValue(int treeLevel, Leaf<InputType>* head,
-    InputType* data) {
-    Leaf<InputType>* currHead = head;
-    Leaf<InputType>* currNode;
+/// <summary>
+/// Calls InsertNode with typed parameters
+/// </summary>
+/// <param name="absHead">Node of type void* that certainly of type T*</param>
+/// <returns>Head of a tree next to created leaf or a function value</returns>
+template<typename T>
+void* Tree<T>::InsertNodeAbstract(void* absHead) {
+    auto** headPtr = static_cast<void**>(absHead);
+    Leaf<T>* currHead = static_cast<Leaf<T>*>(*headPtr);
 
-    InputType functionParam;
-    bool nodeFound; // I have found node with given properties (parameter value)
-    for (; treeLevel >= 0; --treeLevel) { // cycle traversing all parameters (all trees)
-        functionParam = data[treeLevel];
-        currNode = currHead->next;
+    Leaf<T>* newLeaf = nullptr;
+    currHead = InsertNode(currHead, newLeaf);
+    *headPtr = currHead;
 
-        currNode = Find(currNode, functionParam, nodeFound);
-        if (nodeFound) { // I have found requested node, either return result or go
-            if (treeLevel == 0) {
-                std::cout << "Node found!" << std::endl;
-                return currNode->value;
-            }
-            else // one level further
-                currHead = currNode;
-        }
-        else { // I have not found requested node, add it and return result
-
-            Leaf<InputType>* result;
-            currHead->next = InsertNode(currHead->next, data, treeLevel, result);
-            return result->value;
-        }
-    }
-    throw std::runtime_error("Tree::GetValue: unexpected state");
+    return static_cast<void*>(&newLeaf->next);
 }
 
-template<typename InputType, typename ReturnType>
-Leaf<InputType>* Tree<InputType, ReturnType>::Find(Leaf<InputType>* currNode, InputType searchVal, bool& nodeFound)
-{
-    nodeFound = false;
-    while (1) {               // cycle across all leaves on a given tree
-        if (currNode == nullptr) // I have not found given node, need to add
-            break;
-        if (searchVal == currNode->argument) {
-            nodeFound = true;
+/// <summary>
+/// Calls NewNode with typed parameters
+/// </summary>
+/// <param name="absNode"></param>
+/// <returns>Head of a tree next to created leaf or a function value</returns>
+template<typename T>
+void* Tree<T>::NewNodeAbstract(void* absNode) {
+    Leaf<T>** parentValuePtr = static_cast<Leaf<T>**>(absNode);
 
-            break;
-        }
-        else if (searchVal < currNode->argument)
-            currNode = currNode->left;
-        else
-            currNode = currNode->right;
-    }                // cycle across all leaves
+    Leaf<T>* result = nullptr;
+    Leaf<T>* newNode = nullptr;
 
-    return currNode;
-    
-}
-// CleanTree
-template<typename InputType, typename ReturnType>
-void Tree<InputType, ReturnType>::CleanTree(Leaf<InputType>* leaf) {
-    if (leaf == nullptr)
-        return;
-
-    Leaf<InputType>* leftChild = leaf->left;
-    Leaf<InputType>* rightChild = leaf->right;
-    Leaf<InputType>* nextChild = leaf->next;
-
-    CleanTree(leftChild);
-    CleanTree(rightChild);
-    CleanTree(nextChild);
-
-    if (leaf->value != nullptr) {
-        delete static_cast<ReturnType*>(leaf->value);
-    }
-
-    delete leaf;
+    NewNode(newNode, result);
+    *parentValuePtr = newNode;
+    return static_cast<void*>(&result->next);
 }
 
-// NewNode
-template<typename InputType, typename ReturnType>
-Leaf<InputType>* Tree<InputType, ReturnType>::NewNode(InputType* data, const int& treeLevel,
-    Leaf<InputType>*& value) {
-    Leaf<InputType>* node = new Leaf<InputType>(data[treeLevel]);
-    Leaf<InputType>* lastNode = node;
-
-    for (int idx = treeLevel - 1; idx >= 0; --idx) {
-        lastNode->next = new Leaf<InputType>(data[idx]);
-        lastNode = lastNode->next;
-    }
-
-    std::cout << "New node, calling GG" << std::endl;
-    // now only for GG
-    ReturnType* tmpVal = new ReturnType;
-    int L_value = static_cast<int>(data[0]);
-    *tmpVal = GG(L_value, data[1], data[2], data[3], data[4]);
-    lastNode->value = static_cast<void*>(tmpVal);
-    value = lastNode;
-
+/// <summary>
+/// Creates and returns new node with argument=searchValue
+/// </summary>
+/// <typeparam name="T"></typeparam>
+/// <param name="node">Empty node to fill</param>
+/// <param name="lastLeaf">Empty node to fill</param>
+/// <returns>New node</returns>
+template<typename T>
+Leaf<T>* Tree<T>::NewNode(Leaf<T>*& node, Leaf<T>*& lastLeaf) {
+    node = new Leaf<T>(searchValue);
+    lastLeaf = node;
     return node;
 }
 
-// InsertNode
-template<typename InputType, typename ReturnType>
-Leaf<InputType>* Tree<InputType, ReturnType>::InsertNode(Leaf<InputType>* node, InputType* data,
-    const int& treeLevel, Leaf<InputType>*& value) {
-    if (node == nullptr)
-        return NewNode(data, treeLevel, value);
+/// <summary>
+/// Finds a place for a new node, starting with head
+/// </summary>
+/// <typeparam name="T"></typeparam>
+/// <param name="node">Empty node to fill</param>
+/// <param name="lastLeaf">Empty node to fill</param>
+/// <returns>New Node</returns>
+template<typename T>
+Leaf<T>* Tree<T>::InsertNode(Leaf<T>*& node, Leaf<T>*& lastLeaf) {
+    if (node == nullptr) {
+        return NewNode(node, lastLeaf);
+    }
 
-    if (data[treeLevel] > node->argument)
-        node->right = InsertNode(node->right, data, treeLevel, value);
-    else
-        node->left = InsertNode(node->left, data, treeLevel, value);
-
-   return Balance(node, data[treeLevel]);
+    if (searchValue > node->argument) {
+        node->right = InsertNode(node->right, lastLeaf);
+    }
+    else {
+        node->left = InsertNode(node->left, lastLeaf);
+    }
+    return Balance(node);
 }
 
-// Balance
-template<typename InputType, typename ReturnType>
-Leaf<InputType>* Tree<InputType, ReturnType>::Balance(Leaf<InputType>* node, InputType argument) {
+/// <summary>
+/// Calls Find() with typed node 
+/// </summary>
+/// <param name="abstractNode">Node of type void* that certainly has type T</param>
+/// <returns>Pointer to next level head</returns>
+template<typename T>
+void* Tree<T>::FindAbstract(void* abstractNode) {
+    Leaf<T>* specificNode = static_cast<Leaf<T>*>(abstractNode);
+    Leaf<T>* found = Find(specificNode, searchValue);
 
-    node->height = 1 + Max(Height(node->left), Height(node->right));
+    if (found == nullptr) return nullptr;
+
+    return static_cast<void*>(&found->next);
+}
+
+/// <summary>
+/// Searches node with given value on a tree and returns it
+/// </summary>
+/// <typeparam name="T"></typeparam>
+/// <param name="currNode"></param>
+/// <param name="value"></param>
+/// <returns></returns>
+template<typename T>
+Leaf<T>* Tree<T>::Find(Leaf<T>* currNode, const T& value)
+{
+    {
+        while (true) {       
+            // cycle across all leaves on a given Tree
+            if (currNode == nullptr) // I have not found given node, need to add
+                return currNode;
+            if (value == currNode->argument) {
+                break;
+            }
+            else if (value < currNode->argument)
+                currNode = currNode->left;
+            else
+                currNode = currNode->right;
+        }
+        return currNode;
+    }
+}
+
+template<typename T>
+Leaf<T>* Tree<T>::Balance(Leaf<T>* node) {
+
+    node->height = 1 + std::max(Height(node->left), Height(node->right));
     int balance = GetBalance(node);
 
-    // Левое-левое
-    if (balance > 1 && argument < node->left->argument)
+    // Left-left
+    if (balance > 1 && searchValue < node->left->argument)
         return RightRotate(node);
 
-    // Правое-правое
-    if (balance < -1 && argument > node->right->argument)
+    // Right-right
+    if (balance < -1 && searchValue > node->right->argument)
         return LeftRotate(node);
 
-    // Левое-правое
-    if (balance > 1 && argument > node->left->argument) {
+    // Left-right
+    if (balance > 1 && searchValue > node->left->argument) {
         node->left = LeftRotate(node->left);
         return RightRotate(node);
     }
 
-    // Правое-левое
-    if (balance < -1 && argument < node->right->argument) {
+    // Right-left
+    if (balance < -1 && searchValue < node->right->argument) {
         node->right = RightRotate(node->right);
         return LeftRotate(node);
     }
@@ -172,46 +176,44 @@ Leaf<InputType>* Tree<InputType, ReturnType>::Balance(Leaf<InputType>* node, Inp
 }
 
 // Height
-template<typename InputType, typename ReturnType>
-int Tree<InputType, ReturnType>::Height(Leaf<InputType>* node) {
-    if (node == nullptr)
-        return 0;
-    return node->height;
+template<typename T>
+int Tree<T>::Height(Leaf<T>* node) {
+    return node == nullptr ? 0 : node->height;
 }
 
 // RightRotate
-template<typename InputType, typename ReturnType>
-Leaf<InputType>* Tree<InputType, ReturnType>::RightRotate(Leaf<InputType>* y) {
-    Leaf<InputType>* x = y->left;
-    Leaf<InputType>* T2 = x->right;
+template<typename T>
+Leaf<T>* Tree<T>::RightRotate(Leaf<T>* y) {
+    Leaf<T>* x = y->left;
+    Leaf<T>* T2 = x->right;
 
     x->right = y;
     y->left = T2;
 
-    y->height = Max(Height(y->left), Height(y->right)) + 1;
-    x->height = Max(Height(x->left), Height(x->right)) + 1;
+    y->height = std::max(Height(y->left), Height(y->right)) + 1;
+    x->height = std::max(Height(x->left), Height(x->right)) + 1;
 
     return x;
 }
 
 // LeftRotate
-template<typename InputType, typename ReturnType>
-Leaf<InputType>* Tree<InputType, ReturnType>::LeftRotate(Leaf<InputType>* x) {
-    Leaf<InputType>* y = x->right;
-    Leaf<InputType>* T2 = y->left;
+template<typename T>
+Leaf<T>* Tree<T>::LeftRotate(Leaf<T>* x) {
+    Leaf<T>* y = x->right;
+    Leaf<T>* T2 = y->left;
 
     y->left = x;
     x->right = T2;
 
-    x->height = Max(Height(x->left), Height(x->right)) + 1;
-    y->height = Max(Height(y->left), Height(y->right)) + 1;
+    x->height = std::max(Height(x->left), Height(x->right)) + 1;
+    y->height = std::max(Height(y->left), Height(y->right)) + 1;
 
     return y;
 }
 
 // GetBalance
-template<typename InputType, typename ReturnType>
-int Tree<InputType, ReturnType>::GetBalance(Leaf<InputType>* N) {
+template<typename T>
+int Tree<T>::GetBalance(Leaf<T>* N) {
     if (N == nullptr)
         return 0;
     return Height(N->left) - Height(N->right);

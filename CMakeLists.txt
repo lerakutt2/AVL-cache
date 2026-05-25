@@ -38,6 +38,7 @@ if(NOT QUADMATH_INCLUDE_DIR OR NOT QUADMATH_LIBRARY)
                 /usr/include
                 /usr/local/include
                 /usr/lib/gcc/x86_64-linux-gnu/*/include
+                /usr/lib/gcc/x86_64-redhat-linux/*/include/
         )
         
         find_library(QUADMATH_LIBRARY
@@ -47,6 +48,7 @@ if(NOT QUADMATH_INCLUDE_DIR OR NOT QUADMATH_LIBRARY)
                 /usr/lib/x86_64-linux-gnu
                 /usr/local/lib
                 /usr/lib/gcc/x86_64-linux-gnu/*/
+                /usr/lib/gcc/x86_64-redhat-linux/*/
         )
     endif()
 endif()
@@ -75,10 +77,14 @@ file(GLOB SOURCES "src/diplom/*.cpp")
 
 # Создаем исполняемый файл
 add_executable(diplom_new ${SOURCES})
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/ggParameters.txt"
+    "${CMAKE_CURRENT_BINARY_DIR}/ggParameters.txt"
+    COPYONLY
+)
+# Привязываем флаг компиляции конкретно к нашему проекту
+target_compile_options(diplom_new PRIVATE -fext-numeric-literals)
 
-# Линкуем с quadmath
-target_link_libraries(diplom_new ${QUADMATH_LIBRARY})
-
-# Для отладки покажем, что мы нашли
-message(STATUS "QUADMATH_INCLUDE_DIR: ${QUADMATH_INCLUDE_DIR}")
-message(STATUS "QUADMATH_LIBRARY: ${QUADMATH_LIBRARY}")
+# Передаем инклюды и линкуем библиотеку quadmath правильным способом
+target_include_directories(diplom_new PRIVATE ${QUADMATH_INCLUDE_DIR})
+target_link_libraries(diplom_new PRIVATE ${QUADMATH_LIBRARY})

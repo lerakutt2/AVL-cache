@@ -1,65 +1,43 @@
-#ifndef TREE_H
-#define TREE_H_
+#pragma once
 #include "Functions.h"
+#include "Leaf.h"
 
-
-// Структура узла дерева
-template<typename T>
-struct Leaf {
-    Leaf* left = nullptr;
-    Leaf* right = nullptr;
-    Leaf* next = nullptr;
-    int height = 1;
-    T argument{};
-    void* value = nullptr;
-
-    Leaf() = default;
-    explicit Leaf(const T& arg) : argument(arg) {}
-};
-
-// Будем использовать вариативные шаблоны. Запись  typename... InputTypes значит, что шаблон может принять 0 или более типов в качестве своих аргументов.
 /// <summary>
-/// Класс, содержащий дерево для конкретной функции (пока GG)
+/// Template for a tree of specific type
 /// </summary>
-/// <typeparam name="...Args">Типы входных параметров (по порядку)</typeparam>
-/// <typeparam name="ReturnType">Тип выходного параметра</typeparam>
-template<typename InputType, typename ReturnType>
+/// <typeparam name="T">Тип параметра</typeparam>
+template<typename T>
 class Tree {
 public:
-    Tree();
+    Tree() = default;
+    Tree(const Tree&) = default;
+    Tree(Tree&&) = default;
+    Tree& operator=(const Tree&) = default;
+    Tree& operator=(Tree&&) = default;
+    ~Tree() = default;
 
-    ~Tree();
+    T searchValue;
+    T GetArgument(void* absNode);
+    void SetSearchValue(T val);
 
-    Tree(Tree&& other) noexcept;
-    Tree& operator=(Tree&& other) noexcept;
+    // abstract methods
+    void* FindAbstract(void* abstractNode);
+    void* InsertNodeAbstract(void* currHead);
+    void* NewNodeAbstract(void* absNode);
+    void SetNextAbstract(void* absNode, void* next);
 
-    void GetValue(InputType* data, ReturnType& result);
+    // typed methods
+    Leaf<T>* Find(Leaf<T>* currNode, const T& value);
+    Leaf<T>* NewNode(Leaf<T>*& node, Leaf<T>*& lastLeaf);
+    Leaf<T>* InsertNode(Leaf<T>*& node, Leaf<T>*& lastLeaf);
 
-private:
-    Leaf<InputType> head;
-    void* GetValue(int treeLevel, Leaf<InputType>* head, InputType* data);
-
-    void CleanTree(Leaf<InputType>* leaf);
-
-    Leaf<InputType>* NewNode(InputType* data, const int& treeLevel, Leaf<InputType>*& value);
-
-    Leaf<InputType>* InsertNode(Leaf<InputType>* node, InputType* data,
-        const int& treeLevel, Leaf<InputType>*& value);
-
-    Leaf<InputType>* Find(Leaf<InputType>* currNode, InputType searchVal, bool& nodeFound);
-
-    Leaf<InputType>* Balance(Leaf<InputType>* node, InputType argument);
-
-    int Height(Leaf<InputType>* node);
-
-    Leaf<InputType>* RightRotate(Leaf<InputType>* y);
-
-    Leaf<InputType>* LeftRotate(Leaf<InputType>* x);
-
-    int GetBalance(Leaf<InputType>* N);
+    // Balancing
+    Leaf<T>* Balance(Leaf<T>* node);
+    int Height(Leaf<T>* node);
+    Leaf<T>* RightRotate(Leaf<T>* y);
+    Leaf<T>* LeftRotate(Leaf<T>* x);
+    int GetBalance(Leaf<T>* N);
 };
 
-// Подключаем реализацию шаблонных методов
+// Implementation
 #include "../../src/diplom/Tree_impl.h"
-
-#endif // TREE_H
