@@ -1,5 +1,5 @@
 ﻿cmake_minimum_required(VERSION 3.22)
-project(diplom VERSION 1.0.0)
+project(AVL-cache VERSION 1.0.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -72,19 +72,27 @@ endif()
 # Добавляем путь к заголовкам
 include_directories(${QUADMATH_INCLUDE_DIR})
 
-# Находим все исходники
-file(GLOB SOURCES "src/diplom/*.cpp")
+add_executable(AVL-cache
+    # Перенесенные файлы в папку Test (исправьте пути, если папка Test лежит в другом месте)
+    "src/Test/GetTimeOfDay.cpp"
+    "src/Test/Functions.cpp"
+    "include/Test/func_repeat.h"
+    "include/Test/Utils.h"
 
-# Создаем исполняемый файл
-add_executable(diplom_new ${SOURCES})
+    # Оставшиеся файлы в старой папке (перечислите их все через пробел или новую строку)
+    "src/Test/main.cpp"
+    "src/Test/Utils.cpp"
+)
+
 configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/ggParameters.txt"
     "${CMAKE_CURRENT_BINARY_DIR}/ggParameters.txt"
     COPYONLY
 )
+
 # Привязываем флаг компиляции конкретно к нашему проекту
-target_compile_options(diplom_new PRIVATE -fext-numeric-literals)
+target_compile_options(AVL-cache PRIVATE -fext-numeric-literals)
 
 # Передаем инклюды и линкуем библиотеку quadmath правильным способом
-target_include_directories(diplom_new PRIVATE ${QUADMATH_INCLUDE_DIR})
-target_link_libraries(diplom_new PRIVATE ${QUADMATH_LIBRARY})
+target_include_directories(AVL-cache PRIVATE ${QUADMATH_INCLUDE_DIR})
+target_link_libraries(AVL-cache PRIVATE ${QUADMATH_LIBRARY})
